@@ -1,9 +1,18 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, login_user
 from app import db # Importe l'instance de la base de données
 # ...existing code...
 from app.models import Utilisateur, Cours, CoursAffectation, Notification, RoleEnum, Filiere, Niveau, Groupe
 from app import login_manager
+# ...existing code...
+from flask import request, flash, redirect, url_for, render_template
+from werkzeug.security import generate_password_hash, check_password_hash
+from app import db
+from app.models import Utilisateur
+from werkzeug.security import generate_password_hash
+
+# ...existing code...
+
 # ...existing code...
 # Crée un Blueprint pour les routes principales
 main_bp = Blueprint('main', __name__)
@@ -23,7 +32,55 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
     return render_template('index.html')
-# ...existing code...
+
+@main_bp.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        prenom = request.form.get('prenom')
+        nom = request.form.get('nom')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role')
+
+        # Vérification simple
+        if not (prenom and nom and email and password and role):
+            flash("Tous les champs sont obligatoires.", "danger")
+            return render_template('auth/register.html')
+
+        # Vérifier si l'utilisateur existe déjà
+        if Utilisateur.query.filter_by(email=email).first():
+            flash("Cet email est déjà utilisé.", "danger")
+            return render_template('auth/register.html')
+
+        # Création de l'utilisateur
+        user = Utilisateur(
+            prenom=prenom,
+            nom=nom,
+            email=email,
+            password=generate_password_hash(password),
+            role=role
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash("Inscription réussie, vous pouvez vous connecter.", "success")
+        return redirect(url_for('main.login'))
+    return render_template('auth/register.html')
+@main_bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')  # ou 'email' selon ton formulaire
+        password = request.form.get('password')
+
+        user = Utilisateur.query.filter_by(email=username).first()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            flash("Connexion réussie !", "success")
+            return redirect(url_for('main.dashboard'))
+        else:
+            flash("Identifiants invalides.", "danger")
+            return render_template('auth/login.html')
+
+    return render_template('auth/login.html')
 
 
 
