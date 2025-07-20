@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>UniplanBJ – Gestion intelligente des emplois du temps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Google Fonts pour une police moderne -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: linear-gradient(120deg, #2e86de 0%, #48c6ef 100%);
+            color: #222;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: rgba(255,255,255,0.95);
+            padding: 2rem 0 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #2e86de;
+            letter-spacing: 2px;
+        }
+        header p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        .feature {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.10);
+            padding: 1.5rem 1.2rem;
+            max-width: 320px;
+            min-width: 220px;
+            text-align: center;
+        }
+        .feature h3 {
+            color: #2e86de;
+            margin-bottom: 0.5rem;
+        }
+        .cta {
+            margin: 2rem 0 0 0;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .cta a {
+            background: #2e86de;
+            color: #fff;
+            padding: 0.9rem 2rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+        .cta a.secondary {
+            background: #fff;
+            color: #2e86de;
+            border: 2px solid #2e86de;
+        }
+        .cta a:hover {
+            background: #145a96;
+            color: #fff;
+        }
+        .cta a.secondary:hover {
+            background: #2e86de;
+            color: #fff;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem 0;
+            color: #fff;
+            font-size: 0.95rem;
+            background: transparent;
+        }
+        @media (max-width: 800px) {
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>UniplanBJ</h1>
+        <p>La plateforme intelligente et centralisée pour gérer les emplois du temps universitaires au Bénin</p>
+    </header>
+    <main>
+        <div class="features">
+            <div class="feature">
+                <h3>Emploi du temps personnalisé</h3>
+                <p>Chaque étudiant et enseignant accède à son propre planning, mis à jour en temps réel.</p>
+            </div>
+            <div class="feature">
+                <h3>Notifications instantanées</h3>
+                <p>Recevez des alertes pour chaque changement d’horaire, annulation ou nouvelle annonce.</p>
+            </div>
+            <div class="feature">
+                <h3>Gestion simplifiée</h3>
+                <p>Ajoutez, modifiez ou publiez les emplois du temps en quelques clics grâce à une interface intuitive.</p>
+            </div>
+            <div class="feature">
+                <h3>Optimisation & Innovation</h3>
+                <p>Évitez les conflits de salles et bénéficiez de suggestions intelligentes pour l’organisation des cours.</p>
+            </div>
+        </div>
+        <div class="cta">
+            <a href="{{ url_for('main.dashboard') }}">Se connecter</a>
+            <a href="#decouvrir" class="secondary">Découvrir le projet</a>
+        </div>
+    </main>
+    <footer>
+        &copy; 2025 UniplanBJ – Hackathon Universités Bénin. Tous droits réservés.
+    </footer>
+</body>
+</html>

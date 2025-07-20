@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de bord – UniplanBJ</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: linear-gradient(120deg, #2e86de 0%, #48c6ef 100%);
+            color: #222;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: rgba(255,255,255,0.95);
+            padding: 1.2rem 0 1rem 0;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #2e86de;
+            letter-spacing: 1px;
+        }
+        .welcome {
+            margin: 1.5rem 0 0.5rem 0;
+            font-size: 1.2rem;
+            color: #333;
+            text-align: center;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+        .dashboard-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        .card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.10);
+            padding: 1.5rem 1.2rem;
+            max-width: 340px;
+            min-width: 220px;
+            text-align: center;
+        }
+        .card h3 {
+            color: #2e86de;
+            margin-bottom: 0.5rem;
+        }
+        .calendar {
+            margin: 2rem 0 1rem 0;
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.10);
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 700px;
+        }
+        .calendar h2 {
+            color: #2e86de;
+            margin-top: 0;
+        }
+        .calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .calendar-table th, .calendar-table td {
+            border: 1px solid #e0e0e0;
+            padding: 0.7rem;
+            text-align: center;
+        }
+        .calendar-table th {
+            background: #f5f8fa;
+            color: #2e86de;
+        }
+        .notif-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .notif-list li {
+            background: #eaf6ff;
+            margin-bottom: 0.5rem;
+            padding: 0.7rem 1rem;
+            border-radius: 0.5rem;
+            color: #145a96;
+            font-size: 1rem;
+        }
+        .logout-btn {
+            display: inline-block;
+            margin: 2rem 0 0 0;
+            background: #2e86de;
+            color: #fff;
+            padding: 0.7rem 2rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover {
+            background: #145a96;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem 0;
+            color: #fff;
+            font-size: 0.95rem;
+            background: transparent;
+        }
+        @media (max-width: 900px) {
+            .dashboard-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+            .calendar {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>UniplanBJ – Tableau de bord</h1>
+    </header>
+    <div class="welcome">
+        Bonjour, {{ current_user.prenom }} {{ current_user.nom }} !
+        <br>
+        <small>Bienvenue sur votre espace personnel.</small>
+    </div>
+    <main>
+        <div class="dashboard-cards">
+            <div class="card">
+                <h3>Prochain cours</h3>
+                <p>
+                    {% if prochain_cours %}
+                        {{ prochain_cours.matiere }}<br>
+                        <b>{{ prochain_cours.jour }} à {{ prochain_cours.heure }}</b><br>
+                        Salle : {{ prochain_cours.salle }}
+                    {% else %}
+                        Aucun cours à venir aujourd'hui.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card">
+                <h3>Notifications</h3>
+                <ul class="notif-list">
+                   

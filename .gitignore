@@ -1,0 +1,23 @@
+# Environnement virtuel Python
+venv/
+
+# Fichiers de cache Python
+__pycache__/
+*.pyc
+
+# Fichiers de cache et de métadonnées de l'IDE (exemple pour VS Code, à adapter)
+.vscode/
+.idea/
+
+# Base de données locale (SQLite) si vous l'utilisez temporairement
+instance/
+
+# Variables d'environnement sensibles
+.env
+
+# Fichiers de logs (si votre application en génère)
+*.log
+
+# Fichiers temporaires ou de compilation
+*.tmp
+*.bak
