@@ -36,23 +36,24 @@ def index():
 @main_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
+        # 1. Récupération des données du formulaire
         prenom = request.form.get('prenom')
         nom = request.form.get('nom')
         email = request.form.get('email')
         password = request.form.get('password')
         role = request.form.get('role')
 
-        # Vérification simple
+        # 2. Vérification des champs obligatoires
         if not (prenom and nom and email and password and role):
             flash("Tous les champs sont obligatoires.", "danger")
             return render_template('auth/register.html')
 
-        # Vérifier si l'utilisateur existe déjà
+        # 3. Vérification de l'unicité de l'email
         if Utilisateur.query.filter_by(email=email).first():
             flash("Cet email est déjà utilisé.", "danger")
             return render_template('auth/register.html')
 
-        # Création de l'utilisateur
+        # 4. Création et sauvegarde de l'utilisateur
         user = Utilisateur(
             prenom=prenom,
             nom=nom,
@@ -62,25 +63,26 @@ def signup():
         )
         db.session.add(user)
         db.session.commit()
+
+        # 5. Message de succès et redirection vers la connexion
         flash("Inscription réussie, vous pouvez vous connecter.", "success")
         return redirect(url_for('main.login'))
+
+    # 6. Affichage du formulaire d'inscription (GET)
     return render_template('auth/register.html')
 @main_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form.get('username')  # ou 'email' selon ton formulaire
+        email = request.form.get('email')
         password = request.form.get('password')
-
-        user = Utilisateur.query.filter_by(email=username).first()
+        user = Utilisateur.query.filter_by(email=email).first()
         if user and check_password_hash(user.password, password):
             login_user(user)
             flash("Connexion réussie !", "success")
             return redirect(url_for('main.dashboard'))
         else:
-            flash("Identifiants invalides.", "danger")
-            return render_template('auth/login.html')
-
-    return render_template('auth/login.html')
-
+            flash("Email ou mot de passe incorrect.", "danger")
+            return render_template("auth/login.html")
+    return render_template("auth/login.html")
 
 

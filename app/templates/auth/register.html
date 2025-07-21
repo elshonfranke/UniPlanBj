@@ -1,245 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UniplanBJ – Gestion intelligente des emplois du temps</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.3.0/css/all.min.css"
-    integrity="sha512-SzlrxWUlpfuzQ+pcUCosxcglQRNAq/DZjVsC0lE40xsADsfeQoEypE+enwcOiGjk/bSuGGKHEyjSoQ1zVisanQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-  
-  <style>
-  @import url(https://fonts.googleapis.com/css?family=Poppins:300);
- *, *:before, *:after {
-	 box-sizing: border-box;
-}
- body {
-  height: 100vh;
-	 background: #01939c;
-   overflow-y: hidden!important;
-	 font-family: 'Poppins', sans-serif;
-}
- a {
-	 text-decoration: none;
-	 color: #01939c;
-	 transition: 0.5s ease;
-}
- a:hover {
-	 color: #179b77;
-}
- .form {
-	 background: #12141d;
-	 padding: 40px;
-	 max-width: 600px;
-	 margin: 40px auto;
-	 border-radius: 15px;
-	 box-shadow: 0 4px 10px 4px rgba(19, 35, 47, .3);
-}
- .tab-group {
-	 list-style: none;
-	 padding: 0;
-	 margin: 0 0 40px 0;
-}
- .tab-group:after {
-	 content: "";
-	 display: table;
-	 clear: both;
-}
- .tab-group li a {
-	 display: block;
-	 text-decoration: none;
-	 padding: 15px;
-	 background: rgba(160, 179, 176, .25);
-	 color: #a0b3b0;
-	 font-size: 20px;
-	 float: left;
-	 width: 48%;
-	 text-align: center;
-	 cursor: pointer;
-	 transition: 0.5s ease;
-}
- .tab-group li a:hover {
-	 background: #01939c;
-	 color: #fff;
-}
- .tab-group .active a {
-	 background: #01939c;
-	 color: #fff;
-}
- .tab-content > div:last-child {
-	 display: none;
-}
-.tab-group{
-  border-radius: 15px!important;
-  margin: 20px;
-}
- h1 {
-	 text-align: center;
-	 color: #fff;
-	 font-weight: 300;
-	 margin: 0 0 40px;
-}
- input, textarea {
-	 font-size: 17px;
-	 display: block;
-	 width: 100%;
-	 height: 100%;
-	 padding: 5px 10px;
-	 background: none;
-	 background-image: none;
-	 border: 1px solid #01939c;
-	 color: #fff;
-	 border-radius: 6px;
-	 transition: border-color 0.25s ease, box-shadow 0.25s ease;
-}
- textarea {
-	 border: 2px solid #01939c;
-	 resize: vertical;
-}
- .field-wrap {
-	 position: relative;
-	 margin-bottom: 40px;
-}
- .top-row:after {
-	 content: "";
-	 display: table;
-	 clear: both;
-}
- .top-row > div {
-	 float: left;
-	 width: 48%;
-	 margin-right: 4%;
-}
- .top-row > div:last-child {
-	 margin: 0;
-}
- .button {
-	 border: 0;
-	 outline: none;
-	 border-radius: 15px;
-	 padding: 15px 0;
-	 font-size: 20px;
-	 font-weight: 400;
-	 letter-spacing: 0.1em;
-	 background: #01939c;
-   cursor: pointer;
-	 color: #fff;
-	 transition: all 0.5s ease;
-	 -webkit-appearance: none;
-}
- .button:hover, .button:focus {
-	 background: #025c61;
-}
- .button-block {
-	 display: block;
-	 width: 100%;
-}
- .forgot {
-	 margin-top: -20px;
-	 text-align: right;
-}
- 
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription – UniplanBJ</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: url(https://c.wallhere.com/photos/da/70/digital_art_landscape_illustration_skyline-2285476.jpg!d);
+            font-family: 'Montserrat', Arial, sans-serif;
+        }
+        .container {
+            width: 420px;
+            background: rgba(255,255,255,0.07);
+            border: 2px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(18px);
+            box-shadow: 0px 0px 10px rgba(44,62,80,0.10);
+            color: #222;
+            border-radius: 10px;
+            padding: 30px 40px;
+        }
+        h1 {
+            font-size: 2rem;
+            text-align: center;
+            color: #fafbfc;
+            margin-bottom: 20px;
+        }
+        .input-box {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            margin: 20px 0;
+        }
+        
+        .input-box input, .input-box select {
+            width: 90%;
+            height: 100%;
+            background: transparent;
+            border: 2px solid #9fa2a5;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #222;
+            padding: 0 45px 0 20px;
+        }
+        .input-box input::placeholder {
+            color: #2e86de;
+        }
+        .input-box select {
+            width: 105%;
+            color: #2e86de;
+            background: transparent;
+            border: 2px solid #9fa2a5;
+
+        }
+        .input-box i {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+            color: #2e86de;
+        }
+        .btn {
+            width: 100%;
+            height: 45px;
+            background: #2e86de;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #145a96;
+        }
+        .login-link {
+            font-size: 14.5px;
+            text-align: center;
+            margin: 20px 0 0 0;
+        }
+        .login-link a {
+            color: #2e86de;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
+            letter-spacing: 0.5px;
+            animation: fadeIn 0.7s;
+        }
+        .flash-success {
+            background: rgba(46, 204, 113, 0.15);
+            color: #27ae60;
+            border: 1.5px solid #27ae60;
+        }
+        .flash-danger, .flash-error {
+            background: rgba(241, 196, 15, 0.15);
+            color: #e67e22;
+            border: 1.5px solid #e67e22;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+    </style>
 </head>
 <body>
-  <div class="form">
-    <ul class="tab-group">
-      <li class="tab active"><a href="#signup" style="border-radius: 15px!important;margin-right:8x;">Sign Up</a></li>
-      <li class="tab"><a href="#login" style="border-radius: 15px!important;margin-left:8px;">Log In</a></li>
-    </ul>
-    <div class="tab-content">
-      <!-- ...existing code... -->
-<div id="signup">
-  <h1>Register</h1>
-  <form action="/" method="post">
-    <div class="top-row">
-      <div class="field-wrap">
-        <input type="text" required placeholder="First Name" name="prenom" />
-      </div>
-      <div class="field-wrap">
-        <input type="text" required placeholder="Last Name" name="nom" />
-      </div>
-    </div>
-    <div class="field-wrap">
-      <input type="email" required placeholder="Email Address" name="email"/>
-    </div>
-    <div class="field-wrap">
-      <input type="password" required placeholder="Password" name="password" />
-    </div>
-    <!-- Ajout du choix du rôle -->
-    <div class="field-wrap">
-      <select name="role" required style="width:100%;padding:10px;border-radius:6px;border:1px solid #01939c;background:#12141d;color:#fff;font-size:17px;">
-        <option value="" disabled selected>Choisir un rôle</option>
-        <option value="etudiant">Étudiant</option>
-        <option value="enseignant">Enseignant</option>
-        <option value="administrateur">Administrateur</option>
-      </select>
-    </div>
-    <button type="submit" class="button button-block">Sign Up</button>
-  </form>
-</div>
-<!-- ...existing code... -->
-      </div>
-      <div id="login">
-        <h1>Welcome Back!</h1>
-        <form action="/" method="post">
-          <div class="field-wrap">
-            <input type="email" required placeholder="Email" />
-          </div>
-          <div class="field-wrap">
-            <input type="password" required placeholder="Password" />
-          </div>
-          <p class="forgot"><a href="#">Forgot Password?</a></p>
-          <button class="button button-block" >Login</button>
+    <div class="container">
+        <form method="post" action="{{ url_for('main.signup') }}">
+            <h1>Inscription</h1>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="flash-messages">
+                  {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+            <div class="input-box">
+                <input type="text" name="prenom" required placeholder="Prénom"/>
+                <i class="bx bxs-user"></i>
+            </div>
+            <div class="input-box">
+                <input type="text" name="nom" required placeholder="Nom"/>
+                <i class="bx bxs-user"></i>
+            </div>
+            <div class="input-box">
+                <input type="email" name="email" required placeholder="Email"/>
+                <i class="bx bxs-envelope"></i>
+            </div>
+            <div class="input-box">
+                <input type="password" name="password" required placeholder="Mot de passe"/>
+                <i class="bx bxs-lock-alt"></i>
+            </div>
+            <div class="input-box">
+                <select name="role" required>
+                    <option value="" disabled selected>Choisir un rôle</option>
+                    <option value="etudiant">Étudiant</option>
+                    <option value="enseignant">Enseignant</option>
+                    <option value="administrateur">Administrateur</option>
+                </select>
+                <i class="bx bxs-user-detail"></i>
+            </div>
+            <button type="submit" class="btn">S'inscrire</button>
+            <div class="login-link">
+                <p style="color: #fff;">Déjà un compte ? <a href="{{ url_for('main.login') }}">Connectez-vous ici</a></p>
+            </div>
         </form>
-      </div>
     </div>
-  </div> 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </body>
-<script>$('.form').find('input, textarea').on('keyup blur focus', function (e) {
-  
-    var $this = $(this),
-        label = $this.prev('label');
-  
-        if (e.type === 'keyup') {
-              if ($this.val() === '') {
-            label.removeClass('active highlight');
-          } else {
-            label.addClass('active highlight');
-          }
-      } else if (e.type === 'blur') {
-          if( $this.val() === '' ) {
-              label.removeClass('active highlight'); 
-              } else {
-              label.removeClass('highlight');   
-              }   
-      } else if (e.type === 'focus') {
-        
-        if( $this.val() === '' ) {
-              label.removeClass('highlight'); 
-              } 
-        else if( $this.val() !== '' ) {
-              label.addClass('highlight');
-              }
-      }
-  
-  });
-  
-  $('.tab a').on('click', function (e) {
-    
-    e.preventDefault();
-    
-    $(this).parent().addClass('active');
-    $(this).parent().siblings().removeClass('active');
-    
-    target = $(this).attr('href');
-  
-    $('.tab-content > div').not(target).hide();
-    
-    $(target).fadeIn(600);
-    
-  });
-</script>
 </html>
