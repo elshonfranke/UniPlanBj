@@ -1,171 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login page</title>
+    <title>Connexion - UniPlanBJ</title>
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./style.css" />
-
-    <style>
-* {
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: url(https://c.wallhere.com/photos/da/70/digital_art_landscape_illustration_skyline-2285476.jpg!d) no-repeat;
-  background-size: cover;
-  background-position: center;
-  #credits {position: fixed; bottom: 10px; right: 10px; color: rgb(255, 255, 255); font-size: 12px; font-family: Arial, sans-serif;}
-}
-
-.container {
-  width: 420px;
-  background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(18px);
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  color: #fff;
-  border-radius: 10px;
-  padding: 30px 40px;
-}
-
-.container h1 {
-  font-size: 36px;
-  text-align: center;
-}
-
-.container .input-box {
-  position: relative;
-  width: 100%;
-  height: 50px;
-  margin: 30px 0px;
-}
-
-.input-box input {
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  outline: none;
-  border: 2px solid rgb(255, 255, 255, 0.2);
-  border-radius: 5px;
-  font-size: 16px;
-  color: #fff;
-  padding: 20px 45px 20px 20px;
-}
-
-.input-box input::placeholder {
-  color: #fff;
-}
-
-.input-box i {
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 20px;
-}
-
-.container .remember-forgot {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14.5px;
-  margin: -15px 0px 15px;
-}
-
-.remember-forgot label input {
-  color: #fff;
-  margin-right: 3px;
-}
-
-.remember-forgot a {
-  color: #fff;
-  text-decoration: none;
-}
-
-.remember-forgot a:hover {
-  text-decoration: underline;
-}
-
-.container .btn {
-  width: 100%;
-  height: 45px;
-  background: #fff;
-  border: none;
-  outline: none;
-  border-radius: 5px;
-  box-decoration-break: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-}
-
-.container .register-link {
-  font-size: 14.5px;
-  text-align: center;
-  margin: 20px 0px 15px;
-}
-
-.register-link p a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.register-link p a:hover {
-  text-decoration: underline;
-}
-                                         
-</style>
+    <!-- On lie le fichier CSS externe pour une meilleure organisation et performance -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
   </head>
   <body>
     <div class="container">
-      <form action="">
+      <!-- Le formulaire doit avoir une méthode (POST) et une action pour fonctionner -->
+      <form method="POST" action="{{ url_for('main.login') }}">
         <h1>Se connecter</h1>
+
+        <!-- Bloc pour afficher les messages d'erreur ou de succès -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div style="margin-bottom:20px;">
+                <div class="flash-container">
                     {% for category, message in messages %}
-                        <div style="background:#fff3cd;color:#856404;padding:10px 20px;border-radius:8px;margin-bottom:8px;text-align:center;">
+                        <!-- La classe 'flash-message' est stylisée dans le CSS externe -->
+                        <div class="flash-message">
                             {{ message }}
                         </div>
                     {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
+
         <div class="input-box">
-          <input type="email" required placeholder="Email"/>
+          <!-- L'attribut 'name' est crucial pour que Flask récupère la donnée -->
+          <input type="email" name="email" required placeholder="Email"/>
           <i class="bx bxs-user"></i> 
         </div>
         <div class="input-box">
-          <input type="password" placeholderrequired placeholder="Password"/>
-           <i class="bx bxs-lock-alt"></i> 
+          <!-- Correction du typo et ajout de l'attribut 'name' -->
+          <input type="password" name="password" required placeholder="Mot de passe" id="password"/>
+           <i class="bx bxs-hide password-toggle"></i> 
         </div>
 
         <div class="remember-forgot">
-          <label><input type="checkbox" /> Souviens-toi de moi</label>
+          <label><input type="checkbox" name="remember" /> Se souvenir de moi</label>
           <a href="#">Mot de passe oublié?</a>
         </div>
 
-        <button type="submit" class="btn">Login</button>
+        <button type="submit" class="btn">Connexion</button>
 
         <div class="register-link">
-          <p>Vous n'avez pas de compte? <a href="{{ url_for('main.signup') }}">Inscrivez-vous ici!</a></p>
+          <p>Pas encore de compte ? <a href="{{ url_for('main.signup') }}">Inscrivez-vous</a></p>
         </div>
       </form>
     </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const passwordInput = toggle.previousElementSibling;
+                if (passwordInput && (passwordInput.type === 'password' || passwordInput.type === 'text')) {
+                    // Basculer le type de l'input
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    // Basculer l'icône de bxs-hide à bxs-show et vice-versa
+                    toggle.classList.toggle('bxs-hide');
+                    toggle.classList.toggle('bxs-show');
+                }
+            });
+        });
+      });
+    </script>
   </body>
 </html>
             

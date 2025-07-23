@@ -45,10 +45,11 @@ class Groupe(db.Model):
     __tablename__ = 'groupes' # Nom de la table dans la BDD
     id = db.Column(db.Integer, primary_key=True)
     nom_groupe = db.Column(db.String(50), nullable=False)
+    filiere_id = db.Column(db.Integer, db.ForeignKey('filieres.id'), nullable=False)
     niveau_id = db.Column(db.Integer, db.ForeignKey('niveaux.id'), nullable=False)
 
-    # Contrainte d'unicité composite pour s'assurer qu'un groupe est unique par niveau
-    __table_args__ = (db.UniqueConstraint('nom_groupe', 'niveau_id', name='_nom_groupe_niveau_uc'),)
+    # Contrainte d'unicité composite pour s'assurer qu'un groupe est unique par filière et par niveau
+    __table_args__ = (db.UniqueConstraint('nom_groupe', 'filiere_id', 'niveau_id', name='_nom_groupe_filiere_niveau_uc'),)
 
     # Relations inverses:
     # Un utilisateur (étudiant) peut appartenir à un groupe
@@ -80,6 +81,8 @@ class Utilisateur(db.Model, UserMixin):
     # Relations directes pour les cours enseignés et les notifications reçues
     enseigne_cours = db.relationship('Cours', backref='enseignant_obj', foreign_keys='Cours.enseignant_id', lazy='dynamic')
     notifications_recues = db.relationship('Notification', backref='destinataire_obj', foreign_keys='Notification.destinataire_id', lazy='dynamic')
+    # Relation pour les disponibilités
+    disponibilites = db.relationship('DisponibiliteEnseignant', backref='enseignant_obj', lazy='dynamic', cascade="all, delete-orphan")
 
     # Méthodes pour le hachage et la vérification des mots de passe
     def set_password(self, password):
@@ -176,3 +179,19 @@ class Notification(db.Model):
 
     def __repr__(self):
         return f'<Notification "{self.titre[:20]}..." pour {self.destinataire_role}>'
+
+# Modèle pour les disponibilités des enseignants
+class DisponibiliteEnseignant(db.Model):
+    __tablename__ = 'disponibilites_enseignants'
+    id = db.Column(db.Integer, primary_key=True)
+    enseignant_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
+    # Utilisation d'un Enum pour les jours de la semaine pour la robustesse
+    jour_semaine = db.Column(db.Enum('Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'), nullable=False)
+    heure_debut = db.Column(db.Time, nullable=False)
+    heure_fin = db.Column(db.Time, nullable=False)
+
+    # Un enseignant ne peut pas avoir deux fois la même disponibilité
+    __table_args__ = (db.UniqueConstraint('enseignant_id', 'jour_semaine', 'heure_debut', name='_enseignant_dispo_uc'),)
+
+    def __repr__(self):
+        return f'<Disponibilite {self.enseignant_obj.nom} - {self.jour_semaine} {self.heure_debut}>'

@@ -6,136 +6,125 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Google Fonts pour une police moderne -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;400&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Montserrat', Arial, sans-serif;
-            background: linear-gradient(120deg, #2e86de 0%, #48c6ef 100%);
-            color: #222;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        header {
-            background: rgba(255,255,255,0.95);
-            padding: 2rem 0 1rem 0;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(44, 62, 80, 0.08);
-        }
-        header h1 {
-            margin: 0;
-            font-size: 2.5rem;
-            color: #2e86de;
-            letter-spacing: 2px;
-        }
-        header p {
-            margin: 0.5rem 0 0 0;
-            font-size: 1.2rem;
-            color: #555;
-        }
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
-        }
-        .features {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-        .feature {
-            background: #fff;
-            border-radius: 1rem;
-            box-shadow: 0 2px 12px rgba(44, 62, 80, 0.10);
-            padding: 1.5rem 1.2rem;
-            max-width: 320px;
-            min-width: 220px;
-            text-align: center;
-        }
-        .feature h3 {
-            color: #2e86de;
-            margin-bottom: 0.5rem;
-        }
-        .cta {
-            margin: 2rem 0 0 0;
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-        .cta a {
-            background: #2e86de;
-            color: #fff;
-            padding: 0.9rem 2rem;
-            border-radius: 2rem;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: background 0.2s;
-        }
-        .cta a.secondary {
-            background: #fff;
-            color: #2e86de;
-            border: 2px solid #2e86de;
-        }
-        .cta a:hover {
-            background: #145a96;
-            color: #fff;
-        }
-        .cta a.secondary:hover {
-            background: #2e86de;
-            color: #fff;
-        }
-        footer {
-            text-align: center;
-            padding: 1rem 0;
-            color: #fff;
-            font-size: 0.95rem;
-            background: transparent;
-        }
-        @media (max-width: 800px) {
-            .features {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
-    </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- AOS (Animate On Scroll) CSS pour les animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Votre CSS personnalisé (doit être après Bootstrap pour surcharger les styles) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <header>
-        <h1>UniPlanBJ</h1>
-        <p>La plateforme intelligente et centralisée pour gérer les emplois du temps universitaires au Bénin</p>
-    </header>
-    <main>
-        <div class="features">
-            <div class="feature">
-                <h3>Emploi du temps personnalisé</h3>
-                <p>Chaque étudiant et enseignant accède à son propre planning, mis à jour en temps réel.</p>
-            </div>
-            <div class="feature">
-                <h3>Notifications instantanées</h3>
-                <p>Recevez des alertes pour chaque changement d’horaire, annulation ou nouvelle annonce.</p>
-            </div>
-            <div class="feature">
-                <h3>Gestion simplifiée</h3>
-                <p>Ajoutez, modifiez ou publiez les emplois du temps en quelques clics grâce à une interface intuitive.</p>
-            </div>
-            <div class="feature">
-                <h3>Optimisation & Innovation</h3>
-                <p>Évitez les conflits de salles et bénéficiez de suggestions intelligentes pour l’organisation des cours.</p>
-            </div>
+    <header class="header-custom text-center">
+        <div class="container">
+            <h1 data-aos="fade-down">UniPlanBJ</h1>
+            <p data-aos="fade-up" data-aos-delay="100">La plateforme intelligente et centralisée pour gérer les emplois du temps universitaires au Bénin</p>
         </div>
-        <div class="cta">
-            <a href="{{ url_for('main.login') }}">Se connecter</a>
-            <a href="{{ url_for('main.signup') }}" class="secondary">Créé un compte</a>
+    </header>
+
+    <main class="d-flex flex-column justify-content-center align-items-center py-5">
+        <div class="container">
+            <div class="row g-4 justify-content-center">
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+                    <div class="card feature-card text-center p-3">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-week feature-icon"></i>
+                            <h3 class="card-title">Planning Personnalisé</h3>
+                            <p class="card-text">Accédez à votre planning personnel, mis à jour en temps réel.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+                    <div class="card feature-card text-center p-3">
+                        <div class="card-body">
+                            <i class="bi bi-bell-fill feature-icon"></i>
+                            <h3 class="card-title">Notifications Instantanées</h3>
+                            <p class="card-text">Recevez des alertes pour chaque changement, annulation ou annonce.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+                    <div class="card feature-card text-center p-3">
+                        <div class="card-body">
+                            <i class="bi bi-pencil-square feature-icon"></i>
+                            <h3 class="card-title">Gestion Simplifiée</h3>
+                            <p class="card-text">Publiez les emplois du temps en quelques clics via une interface intuitive.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="500">
+                    <div class="card feature-card text-center p-3">
+                        <div class="card-body">
+                            <i class="bi bi-lightbulb-fill feature-icon"></i>
+                            <h3 class="card-title">Optimisation Intelligente</h3>
+                            <p class="card-text">Évitez les conflits et optimisez l'occupation des salles et des ressources.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 pt-3" data-aos="zoom-in" data-aos-delay="600">
+                <a href="{{ url_for('main.login') }}" class="btn btn-primary-custom mx-2">Se connecter</a>
+                <a href="{{ url_for('main.signup') }}" class="btn btn-secondary-custom mx-2">Créer un compte</a>
+            </div>
         </div>
     </main>
-    <footer>
-        &copy; 2025 UniplanBJ – Hackathon Universités Bénin. Tous droits réservés.
+
+    <!-- ======================= Section À propos ======================= -->
+    <section class="about-section py-5">
+        <div class="container">
+            <h2 class="text-center mb-5" data-aos="fade-up">Notre Équipe</h2>
+            <div class="row justify-content-center">
+
+                <!-- Carte Créateur 1 -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="creator-card">
+                        <img src="{{ url_for('static', filename='images/creator1.jpg') }}" alt="Photo du créateur 1" class="creator-img">
+                        <h4 class="mt-3">Nom du Créateur 1</h4>
+                        <p class="role">Développeur Full-Stack</p>
+                        <div class="social-links">
+                            <a href="https://www.linkedin.com/in/frankel-gnonlonfin-a7608933a?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                            <a href="#" target="_blank" title="GitHub"><i class="bi bi-github"></i></a>
+                            <a href="#" target="_blank" title="Portfolio"><i class="bi bi-globe"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carte Créateur 2 -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="creator-card">
+                        <img src="{{ url_for('static', filename='images/creator2.jpg') }}" alt="Photo du créateur 2" class="creator-img">
+                        <h4 class="mt-3">Nom du Créateur 2</h4>
+                        <p class="role">Designer UI/UX</p>
+                        <div class="social-links">
+                            <a href="#" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                            <a href="#" target="_blank" title="Behance"><i class="bi bi-behance"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <footer class="text-center py-4">
+        <div class="container">
+            &copy; 2025 UniplanBJ – Hackathon Universités Bénin. Tous droits réservés.
+        </div>
     </footer>
+
+    <!-- Bootstrap JS Bundle (inclut Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <!-- AOS (Animate On Scroll) JS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Initialisation de AOS -->
+    <script>
+      AOS.init({
+        duration: 1000, // durée de l'animation en ms
+        easing: 'ease-in-out',
+        once: true, // l'animation ne se joue qu'une seule fois
+      });
+    </script>
 </body>
 </html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - UniPlanBJ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-avatar">
+            {{ current_user.prenom[0] | upper }}{{ current_user.nom[0] | upper }}
+        </div>
+        <h1 class="profile-name">{{ current_user.prenom }} {{ current_user.nom }}</h1>
+        <p class="profile-email">{{ current_user.email }}</p>
+
+        <div class="profile-details">
+            <div class="detail-item">
+                <span class="label">Rôle</span>
+                <span class="value">{{ current_user.role }}</span>
+            </div>
+            {% if current_user.role == 'etudiant' %}
+                <div class="detail-item">
+                    <span class="label">Filière</span>
+                    <span class="value">{{ current_user.filiere_obj.nom_filiere if current_user.filiere_obj else 'Non spécifiée' }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Niveau</span>
+                    <span class="value">{{ current_user.niveau_obj.nom_niveau if current_user.niveau_obj else 'Non spécifié' }}</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('main.edit_profile') }}" class="btn-edit">Modifier mon profil</a>
+
+        <div class="dashboard-link">
+            <p><a href="{{ url_for('main.dashboard') }}">Retour au tableau de bord</a></p>
+        </div>
+    </div>
+</body>
+</html>

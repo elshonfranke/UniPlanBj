@@ -5,168 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription – UniplanBJ</title>
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: url(https://c.wallhere.com/photos/da/70/digital_art_landscape_illustration_skyline-2285476.jpg!d);
-            font-family: 'Montserrat', Arial, sans-serif;
-        }
-        .container {
-            width: 420px;
-            background: rgba(255,255,255,0.07);
-            border: 2px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(18px);
-            box-shadow: 0px 0px 10px rgba(44,62,80,0.10);
-            color: #222;
-            border-radius: 10px;
-            padding: 30px 40px;
-        }
-        h1 {
-            font-size: 2rem;
-            text-align: center;
-            color: #fafbfc;
-            margin-bottom: 20px;
-        }
-        .input-box {
-            position: relative;
-            width: 100%;
-            height: 50px;
-            margin: 20px 0;
-        }
-        
-        .input-box input, .input-box select {
-            width: 90%;
-            height: 100%;
-            background: transparent;
-            border: 2px solid #9fa2a5;
-            border-radius: 5px;
-            font-size: 16px;
-            color: #222;
-            padding: 0 45px 0 20px;
-        }
-        .input-box input::placeholder {
-            color: #2e86de;
-        }
-        .input-box select {
-            width: 105%;
-            color: #2e86de;
-            background: transparent;
-            border: 2px solid #9fa2a5;
-
-        }
-        .input-box i {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 20px;
-            color: #2e86de;
-        }
-        .btn {
-            width: 100%;
-            height: 45px;
-            background: #2e86de;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            color: #fff;
-            margin-top: 20px;
-            transition: background 0.2s;
-        }
-        .btn:hover {
-            background: #145a96;
-        }
-        .login-link {
-            font-size: 14.5px;
-            text-align: center;
-            margin: 20px 0 0 0;
-        }
-        .login-link a {
-            color: #2e86de;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .login-link a:hover {
-            text-decoration: underline;
-        }
-        .flash-messages {
-            margin-bottom: 20px;
-        }
-        .flash {
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            text-align: center;
-            font-weight: 500;
-            font-size: 1rem;
-            box-shadow: 0 2px 8px rgba(44,62,80,0.08);
-            letter-spacing: 0.5px;
-            animation: fadeIn 0.7s;
-        }
-        .flash-success {
-            background: rgba(46, 204, 113, 0.15);
-            color: #27ae60;
-            border: 1.5px solid #27ae60;
-        }
-        .flash-danger, .flash-error {
-            background: rgba(241, 196, 15, 0.15);
-            color: #e67e22;
-            border: 1.5px solid #e67e22;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px);}
-            to { opacity: 1; transform: translateY(0);}
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
 <body>
     <div class="container">
         <form method="post" action="{{ url_for('main.signup') }}">
             <h1>Inscription</h1>
+
             {% with messages = get_flashed_messages(with_categories=true) %}
               {% if messages %}
-                <div class="flash-messages">
+                <div class="flash-container">
                   {% for category, message in messages %}
-                    <div class="flash flash-{{ category }}">{{ message }}</div>
+                    <div class="flash-message">{{ message }}</div>
                   {% endfor %}
                 </div>
               {% endif %}
             {% endwith %}
+
             <div class="input-box">
                 <input type="text" name="prenom" required placeholder="Prénom"/>
                 <i class="bx bxs-user"></i>
             </div>
             <div class="input-box">
                 <input type="text" name="nom" required placeholder="Nom"/>
-                <i class="bx bxs-user"></i>
+                <i class='bx bxs-user-detail'></i>
             </div>
             <div class="input-box">
                 <input type="email" name="email" required placeholder="Email"/>
                 <i class="bx bxs-envelope"></i>
             </div>
             <div class="input-box">
-                <input type="password" name="password" required placeholder="Mot de passe"/>
-                <i class="bx bxs-lock-alt"></i>
+                <input type="password" name="password" required placeholder="Mot de passe" id="password"/>
+                <i class="bx bxs-hide password-toggle"></i>
             </div>
             <div class="input-box">
-                <select name="role" required>
+                <select name="role" required onchange="this.setAttribute('valid', 'true');">
                     <option value="" disabled selected>Choisir un rôle</option>
                     <option value="etudiant">Étudiant</option>
                     <option value="enseignant">Enseignant</option>
                     <option value="administrateur">Administrateur</option>
                 </select>
-                <i class="bx bxs-user-detail"></i>
+                <i class='bx bxs-graduation'></i>
             </div>
+
             <button type="submit" class="btn">S'inscrire</button>
+
             <div class="login-link">
-                <p style="color: #fff;">Déjà un compte ? <a href="{{ url_for('main.login') }}">Connectez-vous ici</a></p>
+                <p>Déjà un compte ? <a href="{{ url_for('main.login') }}">Connectez-vous ici</a></p>
             </div>
         </form>
     </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const passwordInput = toggle.previousElementSibling;
+                if (passwordInput && (passwordInput.type === 'password' || passwordInput.type === 'text')) {
+                    // Basculer le type de l'input
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    // Basculer l'icône de bxs-hide à bxs-show et vice-versa
+                    toggle.classList.toggle('bxs-hide');
+                    toggle.classList.toggle('bxs-show');
+                }
+            });
+        });
+      });
+    </script>
 </body>
 </html>

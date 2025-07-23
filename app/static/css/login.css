@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+/* 
+  Animation pour le diaporama d'images.
+  Change l'image de fond (thème : planification, étude) toutes les 7.5 secondes.
+  NOTE : Pour de meilleures performances, téléchargez ces images et servez-les localement
+  depuis votre dossier `static/images/`.
+*/ 
+@keyframes image-slideshow {
+    /* NOTE: Il est fortement recommandé de télécharger ces images et de les servir localement. */
+    0%, 100% { background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop'); } /* Salle de conférence */
+    25%      { background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'); } /* Collaboration au bureau */
+    50%      { background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop'); } /* Étudiants sur un banc */
+    75%      { background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2153&auto=format&fit=crop'); } /* Bibliothèque */
+}
+
+/* Animation pour l'effet de zoom lent et continu (Ken Burns) */
+@keyframes ken-burns {
+    0%   { transform: scale(1.1); }
+    100% { transform: scale(1.2); }
+}
+
+* {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Pseudo-élément pour gérer le diaporama en arrière-plan */
+body::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  animation: 
+    image-slideshow 30s linear infinite,
+    ken-burns 45s ease-in-out infinite alternate;
+}
+
+.container {
+  width: 420px;
+  background: rgba(0, 0, 0, 0.5); /* Fond sombre pour la lisibilité */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  border-radius: 15px;
+  padding: 30px 40px;
+  animation: fadeIn 1s ease-out;
+  transition: transform 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container h1 {
+  font-size: 36px;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.container .input-box {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  margin: 30px 0;
+}
+
+.input-box input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 16px;
+  color: #fff;
+  padding: 20px 45px 20px 20px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.input-box input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.input-box input:focus {
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.input-box input:focus + i {
+  color: #fff; /* L'icône devient blanche et opaque au focus */
+}
+
+.input-box i {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7); /* Couleur initiale pour une meilleure visibilité */
+  transition: color 0.3s ease;
+}
+
+.input-box .password-toggle {
+  cursor: pointer;
+  user-select: none; /* Empêche la sélection du texte de l'icône */
+  pointer-events: auto; /* S'assure que l'icône est cliquable */
+}
+
+.container .remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14.5px;
+  margin: -15px 0 15px;
+}
+
+.remember-forgot label input {
+  accent-color: #fff; /* Améliore le style de la checkbox */
+  margin-right: 3px;
+}
+
+.remember-forgot a {
+  color: #fff;
+  text-decoration: none;
+  transition: text-decoration 0.3s ease;
+}
+
+.remember-forgot a:hover {
+  text-decoration: underline;
+}
+
+/* Bouton de connexion cohérent avec l'identité visuelle du site */
+.container .btn {
+  width: 100%;
+  height: 45px;
+  background: linear-gradient(90deg, #fd1d1d, #fcb045);
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.container .btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(252, 176, 69, 0.4);
+}
+
+.container .register-link {
+  font-size: 14.5px;
+  text-align: center;
+  margin: 20px 0 15px;
+}
+
+.register-link p a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: text-decoration 0.3s ease;
+}
+
+.register-link p a:hover {
+  text-decoration: underline;
+}
+
+/* Style pour les messages flash (pour éviter les styles en ligne) */
+.flash-container {
+    margin-bottom: 20px;
+}
+
+.flash-message {
+    /* Style "glassmorphism" pour les alertes, cohérent avec le design */
+    background: rgba(255, 82, 82, 0.4); /* Fond rouge translucide pour les erreurs */
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 82, 82, 0.8);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.5s;
+}

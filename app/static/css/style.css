@@ -1,0 +1,245 @@
+/* --- Animations de l'arrière-plan --- */
+@keyframes image-slideshow {
+    /* NOTE: Il est fortement recommandé de télécharger ces images et de les servir localement. */
+    0%, 100% { background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop'); } /* Salle de conférence */
+    25%      { background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'); } /* Collaboration au bureau */
+    50%      { background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop'); } /* Étudiants sur un banc */
+    75%      { background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2153&auto=format&fit=crop'); } /* Bibliothèque */
+}
+
+@keyframes ken-burns {
+    0%   { transform: scale(1.1); }
+    100% { transform: scale(1.2); }
+}
+
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    color: #fff; /* Texte par défaut en blanc pour un meilleur contraste */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Nécessaire pour le positionnement du pseudo-élément */
+    overflow-x: hidden; /* Empêche le débordement horizontal de l'animation */
+}
+
+/* Pseudo-élément pour gérer le diaporama en arrière-plan */
+body::before {
+  content: '';
+  position: fixed; /* Fixed pour qu'il reste en place au défilement */
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  animation: 
+    image-slideshow 30s linear infinite,
+    ken-burns 45s ease-in-out infinite alternate;
+}
+
+main {
+    flex: 1;
+}
+
+/* Effet "Glassmorphism" pour le header */
+.header-custom {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); /* Pour Safari */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 2rem 0;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+.header-custom h1 {
+    font-size: 3rem;
+    color: #fff;
+    letter-spacing: 2px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header-custom p {
+    font-size: 1.2rem;
+    color: #f0f0f0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Icônes pour les cartes */
+.feature-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(131, 58, 180, 0.5);
+}
+
+/* Cartes avec effet "Glassmorphism" et lueur au survol */
+.feature-card {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    color: #fff;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.3), 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.feature-card h3 {
+    color: #fff;
+    font-weight: 600;
+}
+
+.feature-card p {
+    color: #e0e0e0;
+}
+
+/* Boutons personnalisés avec plus d'impact */
+.btn-primary-custom {
+    background: linear-gradient(90deg, #fd1d1d, #fcb045);
+    color: #fff;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(252, 176, 69, 0.4);
+}
+
+.btn-secondary-custom {
+    background-color: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+    padding: 0.8rem 2rem;
+    border-radius: 2rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary-custom:hover {
+    background-color: #fff;
+    color: #833ab4; /* Violet principal de la nouvelle palette */
+    transform: scale(1.05);
+}
+
+/* Styles du footer */
+footer {
+    color: #fff;
+    background: transparent;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Styles pour la section "À propos" */
+.about-section {
+    padding: 4rem 0;
+    /* Un fond légèrement différent pour délimiter la section */
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.about-section h2 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 3rem;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.creator-card {
+    /* On réutilise l'effet glassmorphism des feature-card */
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    padding: 2rem;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    color: #fff;
+}
+
+.creator-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.25), 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+.creator-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.creator-card h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.creator-card p.role {
+    color: #e0e0e0;
+    font-style: italic;
+    margin-bottom: 1rem;
+}
+
+.social-links a {
+    color: #fff;
+    font-size: 1.5rem;
+    margin: 0 0.5rem;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #fd1d1d; /* Une des couleurs vives de la palette */
+    transform: scale(1.2);
+}
+
+/* --- Styles pour la page de chargement (Preloader) --- */
+.preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #121212; /* Un fond sombre pour cacher le chargement */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.8s ease, visibility 0.8s ease;
+    visibility: visible;
+    opacity: 1;
+}
+
+.preloader.hidden {
+    opacity: 0;
+    visibility: hidden; /* Cache complètement l'élément après la transition */
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-top-color: #fd1d1d; /* Couleur vive de la palette du site */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compléter le Profil - UniPlanBJ</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+    <!-- Lien vers le nouveau fichier CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_profile.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- L'action pointe maintenant vers la route de traitement -->
+        <form method="post" action="{{ url_for('main.edit_profile') }}"> 
+            <h1>Compléter mon profil</h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                <div class="flash-container">
+                  {% for category, message in messages %}
+                    <div class="flash-message">{{ message }}</div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endwith %}
+
+            <div class="input-box">
+                <input type="text" name="filiere" required placeholder="Filière (ex: Génie Logiciel)" value="{{ current_user.filiere_obj.nom_filiere if current_user.filiere_obj else '' }}"/>
+                <i class='bx bxs-book-content'></i>
+            </div>
+
+            <div class="input-box">
+                <!-- CORRECTION : Le nom du select est 'niveau_id' pour correspondre à la route -->
+                <select name="niveau_id" required onchange="this.setAttribute('valid', 'true');">
+                    <option value="" disabled selected>Niveau d'étude</option>
+                    <!-- On itère sur la liste des niveaux passée par la route -->
+                    {% for niveau in niveaux %}
+                        <option value="{{ niveau.id }}" {% if current_user.niveau_id == niveau.id %}selected{% endif %}>{{ niveau.nom_niveau }}</option>
+                    {% endfor %}
+                </select>
+                <i class='bx bxs-graduation'></i>
+            </div>
+
+            <button type="submit" class="btn">Enregistrer</button>
+
+            <div class="dashboard-link">
+                <p><a href="{{ url_for('main.dashboard') }}">Retour au tableau de bord</a></p>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,179 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+/* Animation pour le dégradé de fond */
+@keyframes gradient-animation {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+* {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+  /* Utilisation d'un fond en dégradé animé pour un effet dynamique */
+  background: linear-gradient(120deg, #833ab4, #fd1d1d, #fcb045);
+  background-size: 400% 400%;
+  animation: gradient-animation 18s ease infinite;
+}
+
+.container {
+  width: 420px;
+  background: rgba(255, 255, 255, 0.15); /* Effet "glassmorphism" plus clair */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+  color: #fff;
+  border-radius: 15px;
+  padding: 30px 40px;
+  animation: fadeIn 1s ease-out;
+  transition: transform 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container h1 {
+  font-size: 36px;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+}
+
+.container .input-box {
+  position: relative;
+  width: 100%;
+  height: 50px;
+  margin: 30px 0;
+}
+
+.input-box input, .input-box select {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 16px;
+  color: #fff;
+  padding: 0 45px 0 20px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.input-box input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.input-box select {
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+
+.input-box select:focus, .input-box select:valid {
+    color: #fff;
+}
+
+.input-box select option {
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+}
+
+.input-box input:focus, .input-box select:focus {
+  border-color: #fff;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+}
+
+.input-box input:focus + i, .input-box select:focus + i {
+  color: #fff;
+}
+
+.input-box i {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.3s ease;
+  pointer-events: none; /* Permet de cliquer sur le select à travers l'icône */
+}
+
+.btn {
+  width: 100%;
+  height: 45px;
+  background: linear-gradient(90deg, #fd1d1d, #fcb045);
+  border: none;
+  outline: none;
+  border-radius: 8px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin-top: 10px;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(252, 176, 69, 0.4);
+}
+
+.dashboard-link {
+  font-size: 14.5px;
+  text-align: center;
+  margin: 20px 0 0;
+  color: #fff;
+}
+
+.dashboard-link a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: text-decoration 0.3s ease;
+}
+
+.dashboard-link a:hover {
+  text-decoration: underline;
+}
+
+.flash-container {
+    margin-bottom: 20px;
+}
+
+.flash-message {
+    background: rgba(255, 82, 82, 0.4);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    text-align: center;
+    border: 1px solid rgba(255, 82, 82, 0.8);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.5s;
+}

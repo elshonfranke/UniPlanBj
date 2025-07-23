@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tableau de bord Enseignant - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1>Tableau de Bord Enseignant</h1>
+        <div class="user-info d-flex align-items-center">
+            <span>Bonjour, <strong>{{ current_user.prenom }}</strong></span>
+            <a href="{{ url_for('main.logout') }}" class="btn-logout">
+                <i class="bi bi-box-arrow-right"></i> Déconnexion
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        <div class="row g-4">
+            <!-- Colonne de gauche : Gestion des disponibilités -->
+            <div class="col-lg-5">
+                <div class="info-card">
+                    <h3><i class="bi bi-calendar-plus"></i> Mes disponibilités</h3>
+                    <form method="POST" action="{{ url_for('main.enseignant_dashboard') }}">
+                        <div class="mb-3">
+                            <label for="jour_semaine" class="form-label">Jour de la semaine</label>
+                            <select class="form-select" id="jour_semaine" name="jour_semaine" required>
+                                <option value="Lundi">Lundi</option>
+                                <option value="Mardi">Mardi</option>
+                                <option value="Mercredi">Mercredi</option>
+                                <option value="Jeudi">Jeudi</option>
+                                <option value="Vendredi">Vendredi</option>
+                                <option value="Samedi">Samedi</option>
+                            </select>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label for="heure_debut" class="form-label">De</label>
+                                <input type="time" class="form-control" id="heure_debut" name="heure_debut" required>
+                            </div>
+                            <div class="col">
+                                <label for="heure_fin" class="form-label">À</label>
+                                <input type="time" class="form-control" id="heure_fin" name="heure_fin" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Ajouter disponibilité</button>
+                    </form>
+                    <hr>
+                    <h5>Disponibilités enregistrées</h5>
+                    <ul class="list-group">
+                        {% for dispo in disponibilites %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ dispo.jour_semaine }} : {{ dispo.heure_debut.strftime('%Hh%M') }} - {{ dispo.heure_fin.strftime('%Hh%M') }}
+                                <!-- Optionnel: Ajouter un bouton de suppression -->
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">Aucune disponibilité enregistrée.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Colonne de droite : Emploi du temps -->
+            <div class="col-lg-7">
+                <div class="table-card">
+                    <h3 class="mb-3"><i class="bi bi-calendar-week"></i> Mon emploi du temps</h3>
+                    <div class="table-responsive">
+                        <table class="table table-borderless schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Jour</th>
+                                    <th>Heure</th>
+                                    <th>Matière</th>
+                                    <th>Salle</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if emploi_du_temps and emploi_du_temps|length > 0 %}
+                                    {% for cours in emploi_du_temps %}
+                                    <tr>
+                                        <td>{{ cours.date_cours.strftime('%A %d/%m/%Y') }}</td>
+                                        <td>{{ cours.heure_debut.strftime('%Hh%M') }} - {{ cours.heure_fin.strftime('%Hh%M') }}</td>
+                                        <td>{{ cours.matiere_obj.nom_matiere }}</td>
+                                        <td>{{ cours.salle_obj.nom_salle }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-4">Votre emploi du temps est vide.</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center">
+        &copy; 2025 UniplanBJ – Hackathon Universités Bénin. Tous droits réservés.
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

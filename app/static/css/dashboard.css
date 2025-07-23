@@ -1,0 +1,194 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+/* --- Animations de l'arrière-plan (cohérence avec le reste du site) --- */
+@keyframes image-slideshow {
+    0%, 100% { background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop'); }
+    25%      { background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'); }
+    50%      { background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop'); }
+    75%      { background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2153&auto=format&fit=crop'); }
+}
+
+@keyframes ken-burns {
+    0%   { transform: scale(1.1); }
+    100% { transform: scale(1.2); }
+}
+
+/* --- Styles de base --- */
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    color: #fff;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  animation: 
+    image-slideshow 30s linear infinite,
+    ken-burns 45s ease-in-out infinite alternate;
+}
+
+/* --- En-tête du tableau de bord --- */
+.dashboard-header {
+    background: rgba(22, 22, 22, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 2rem;
+    color: #fff;
+}
+
+.dashboard-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.user-info span {
+    margin-right: 1rem;
+}
+
+.btn-logout {
+    background: transparent;
+    border: 1px solid #fd1d1d;
+    color: #fd1d1d;
+    padding: 0.4rem 1rem;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-edit-profile {
+    background: transparent;
+    border: 1px solid #fcb045;
+    color: #fcb045;
+    padding: 0.4rem 1rem;
+    border-radius: 2rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-right: 0.75rem;
+}
+
+.btn-edit-profile:hover {
+    background: #fcb045;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(252, 176, 69, 0.5);
+}
+
+.btn-logout:hover {
+    background: #fd1d1d;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(253, 29, 29, 0.5);
+}
+
+/* --- Contenu principal et cartes --- */
+.main-content {
+    padding: 2rem 0;
+}
+
+.info-card {
+    background: rgba(22, 22, 22, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    height: 100%;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.info-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.info-card h3 i {
+    margin-right: 0.75rem;
+    color: #fcb045;
+}
+
+.notification-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.notification-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-list li:last-child {
+    border-bottom: none;
+}
+
+/* --- Tableau de l'emploi du temps --- */
+.table-card {
+    background: rgba(22, 22, 22, 0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.schedule-table {
+    color: #fff;
+}
+
+.schedule-table thead th {
+    color: #fcb045;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.schedule-table th, .schedule-table td {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    vertical-align: middle;
+}
+
+.schedule-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+/* --- Footer --- */
+footer {
+    background: rgba(22, 22, 22, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 1rem 0;
+    font-size: 0.9rem;
+}
+
+/* --- Scrollbar personnalisée pour la liste des notifications --- */
+.notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
+}
