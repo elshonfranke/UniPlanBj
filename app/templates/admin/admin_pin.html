@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification de Sécurité - UniPlanBJ</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+    <!-- On réutilise le style de la page de connexion pour la cohérence -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="container">
+        <form method="POST" action="{{ url_for('main.admin_verify_pin') }}">
+            <h1>Vérification de Sécurité</h1>
+            <p style="text-align: center; margin-top: -15px; margin-bottom: 20px; color: rgba(255,255,255,0.8);">
+                Veuillez entrer votre code PIN pour continuer.
+            </p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-container">
+                        {% for category, message in messages %}
+                            <div class="flash-message">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <div class="input-box">
+              <input type="password" name="pin" required placeholder="Code PIN" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"/>
+              <i class="bx bxs-lock-alt"></i> 
+            </div>
+
+            <button type="submit" class="btn">Vérifier</button>
+
+            <div class="register-link">
+              <p><a href="{{ url_for('main.logout') }}">Se déconnecter</a></p>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

@@ -10,19 +10,106 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
 <body>
-    <header class="dashboard-header d-flex justify-content-between align-items-center">
+    <header class="dashboard-header d-flex flex-column flex-md-row justify-content-between align-items-center">
         <h1>Panneau d'Administration</h1>
-        <div class="user-info d-flex align-items-center">
-            <span>Admin: <strong>{{ current_user.prenom }}</strong></span>
-            <a href="{{ url_for('main.logout') }}" class="btn-logout">
-                <i class="bi bi-box-arrow-right"></i> Déconnexion
+        <div class="user-info d-flex align-items-center flex-wrap justify-content-center justify-content-md-end mt-2 mt-md-0">
+            <a href="{{ url_for('main.notifications') }}" class="btn btn-outline-light me-2 position-relative">
+                <i class="bi bi-bell"></i>
+                {% if unread_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ unread_count }}
+                        <span class="visually-hidden">notifications non lues</span>
+                    </span>
+                {% endif %}
+            </a>
+            <span class="me-3">Admin: <strong>{{ current_user.prenom }}</strong></span>
+            <a href="{{ url_for('main.logout') }}" class="btn-logout me-2">
+                <i class="bi bi-box-arrow-right"></i> <span class="d-none d-sm-inline">Déconnexion</span>
+            </a>
+            <a href="{{ url_for('main.admin_lock') }}" class="btn btn-outline-warning ms-2" title="Verrouiller la session admin">
+                <i class="bi bi-lock-fill"></i>
             </a>
         </div>
     </header>
 
     <main class="main-content container">
         <div class="row g-4">
+            <!-- Carte de gestion de l'emploi du temps -->
             <div class="col-12">
+                <div class="info-card">
+                    <h3><i class="bi bi-calendar-plus"></i> Gestion de l'Emploi du Temps</h3>
+                    <p>Créez de nouvelles séances de cours, assignez-les et consultez les disponibilités des enseignants.</p>
+                    <a href="{{ url_for('main.create_course') }}" class="btn btn-primary me-2">
+                        <i class="bi bi-plus-circle"></i> Créer un cours
+                    </a>
+                    <a href="{{ url_for('main.admin_availabilities') }}" class="btn btn-outline-info">
+                        <i class="bi bi-eye"></i> Voir les disponibilités
+                    </a>
+                    <a href="{{ url_for('main.schedule_viewer') }}" class="btn btn-outline-success ms-2">
+                        <i class="bi bi-grid-3x3-gap"></i> Visualiser l'Emploi du Temps
+                    </a>
+                </div>
+            </div>
+            <!-- Carte des notifications récentes pour l'admin -->
+            <div class="col-md-6">
+                <div class="info-card">
+                    <h3><i class="bi bi-bell"></i> Notifications Récentes</h3>
+                    <ul class="notification-list">
+                        {% if notifications and notifications|length > 0 %}
+                            {% for notif in notifications %}
+                                <li>{{ notif.message }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li>Aucune nouvelle notification.</li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <!-- Carte des utilisateurs en ligne -->
+            <div class="col-md-6">
+                <div class="info-card">
+                    <h3><i class="bi bi-person-circle text-success"></i> Utilisateurs en ligne (5 dernières minutes)</h3>
+                    {% if online_users %}
+                        <ul class="list-group list-group-flush">
+                            {% for user in online_users %}
+                                <li class="list-group-item bg-transparent text-white d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <span class="online-indicator me-2"></span>
+                                        <span>{{ user.prenom }} {{ user.nom }}</span>
+                                    </div>
+                                    <span class="badge bg-success">{{ user.role }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-white-50">Aucun utilisateur actif pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-12">
+                <!-- Formulaire de recherche et de filtrage -->
+                <div class="info-card mb-4">
+                    <form method="GET" action="{{ url_for('main.admin_dashboard') }}">
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5">
+                                <label for="q" class="form-label">Rechercher</label>
+                                <input type="text" name="q" id="q" class="form-control" placeholder="Nom, prénom ou email..." value="{{ request.args.get('q', '') }}">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="role" class="form-label">Rôle</label>
+                                <select name="role" id="role" class="form-select">
+                                    <option value="">Tous les rôles</option>
+                                    <option value="etudiant" {% if request.args.get('role') == 'etudiant' %}selected{% endif %}>Étudiant</option>
+                                    <option value="enseignant" {% if request.args.get('role') == 'enseignant' %}selected{% endif %}>Enseignant</option>
+                                    <option value="administrateur" {% if request.args.get('role') == 'administrateur' %}selected{% endif %}>Administrateur</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Filtrer</button></div>
+                            <div class="col-md-2"><a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-secondary w-100">Réinitialiser</a></div>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="table-card">
                     <h3 class="mb-3"><i class="bi bi-people-fill"></i> Gestion des Utilisateurs</h3>
                     <div class="table-responsive">
@@ -34,6 +121,7 @@
                                     <th>Nom</th>
                                     <th>Email</th>
                                     <th>Rôle</th>
+                                    <th>Statut</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -46,16 +134,98 @@
                                         <td>{{ user.email }}</td>
                                         <td><span class="badge bg-primary">{{ user.role }}</span></td>
                                         <td>
-                                            <!-- Placeholder pour les futurs boutons -->
-                                            <a href="#" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
-                                            <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                                            {% if user in online_users %}<span class="text-success">En ligne</span>{% else %}<span class="text-muted">Hors ligne</span>{% endif %}
+                                        </td>
+                                        <td>
+                                            <!-- Bouton Modifier fonctionnel -->
+                                            <a href="{{ url_for('main.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                                            <!-- Bouton pour déclencher le modal de suppression -->
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#confirmDeleteModal" 
+                                                    data-user-id="{{ user.id }}" 
+                                                    data-user-name="{{ user.prenom }} {{ user.nom }}"
+                                                    {% if user.id == current_user.id %}disabled title="Vous ne pouvez pas vous supprimer vous-même"{% endif %}>
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Contrôles de Pagination -->
+                    {% if pagination %}
+                    <nav aria-label="Pagination des utilisateurs" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <!-- Lien Précédent -->
+                            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('main.admin_dashboard', page=pagination.prev_num, q=request.args.get('q', ''), role=request.args.get('role', '')) }}">Précédent</a>
+                            </li>
+
+                            <!-- Liens des pages -->
+                            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                                {% if page_num %}
+                                    <li class="page-item {% if pagination.page == page_num %}active{% endif %}">
+                                        <a class="page-link" href="{{ url_for('main.admin_dashboard', page=page_num, q=request.args.get('q', ''), role=request.args.get('role', '')) }}">{{ page_num }}</a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                                {% endif %}
+                            {% endfor %}
+
+                            <!-- Lien Suivant -->
+                            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                                <a class="page-link" href="{{ url_for('main.admin_dashboard', page=pagination.next_num, q=request.args.get('q', ''), role=request.args.get('role', '')) }}">Suivant</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    {% endif %}
                 </div>
+
+                <!-- Liste des cours créés -->
+                <div class="table-card mt-4">
+                    <h3 class="mb-3"><i class="bi bi-book-half"></i> Gestion des Cours</h3>
+                    <div class="table-responsive">
+                        <table class="table table-borderless schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Matière</th>
+                                    <th>Enseignant</th>
+                                    <th>Date</th>
+                                    <th>Heure</th>
+                                    <th>Salle</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in courses %}
+                                    <tr>
+                                        <td>{{ course.matiere_obj.nom_matiere }}</td>
+                                        <td>{{ course.enseignant_obj.prenom }} {{ course.enseignant_obj.nom }}</td>
+                                        <td>{{ course.date_cours.strftime('%d/%m/%Y') }}</td>
+                                        <td>{{ course.heure_debut.strftime('%Hh%M') }}</td>
+                                        <td>{{ course.salle_obj.nom_salle }}</td>
+                                        <td>
+                                            <a href="{{ url_for('main.edit_course', course_id=course.id) }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                                            <form action="{{ url_for('main.delete_course', course_id=course.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">Aucun cours n'a encore été créé.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -63,5 +233,51 @@
     <footer class="text-center">
         &copy; 2025 UniplanBJ – Hackathon Universités Bénin. Tous droits réservés.
     </footer>
+
+    <!-- Modal de Confirmation de Suppression avec champ PIN -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmer la Suppression</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="deleteUserForm" method="POST" action="">
+            <div class="modal-body">
+              <p>Vous êtes sur le point de supprimer l'utilisateur <strong id="userNameToDelete"></strong>. Cette action est irréversible.</p>
+              <p>Pour confirmer, veuillez entrer votre code PIN de sécurité.</p>
+              <div class="mb-3">
+                <label for="pin" class="form-label">Code PIN</label>
+                <input type="password" class="form-control" id="pin" name="pin" required inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+              </div>
+            </div>
+            <div class="modal-footer border-secondary">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-danger">Supprimer l'utilisateur</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var confirmDeleteModal = document.getElementById('confirmDeleteModal');
+      confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var userName = button.getAttribute('data-user-name');
+        var userId = button.getAttribute('data-user-id');
+        
+        var modalTitle = confirmDeleteModal.querySelector('.modal-title');
+        var modalBodyUserName = confirmDeleteModal.querySelector('#userNameToDelete');
+        var deleteForm = confirmDeleteModal.querySelector('#deleteUserForm');
+        
+        modalTitle.textContent = 'Confirmer la Suppression de ' + userName;
+        modalBodyUserName.textContent = userName;
+        deleteForm.action = '/admin/delete_user/' + userId;
+      });
+    });
+    </script>
 </body>
 </html>

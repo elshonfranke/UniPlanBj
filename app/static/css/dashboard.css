@@ -192,3 +192,30 @@ footer {
 .notification-list::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.5);
 }
+
+/* Ajout pour l'indicateur de statut en ligne */
+.online-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: #28a745; /* Vert succès de Bootstrap */
+  border-radius: 50%;
+  border: 1px solid #fff; /* Petite bordure pour le contraste sur fond sombre */
+  animation: pulse 2s infinite;
+}
+
+/* Animation de pulsation pour attirer l'attention */
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+  }
+}

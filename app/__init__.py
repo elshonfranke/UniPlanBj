@@ -7,12 +7,12 @@ from app.config import Config # Importe votre classe de configuration
 # Initialisation des extensions
 db = SQLAlchemy()
 login_manager = LoginManager()
-login_manager.login_view = 'auth.login' # Nom de la vue de connexion, si l'utilisateur n'est pas authentifié
+login_manager.login_view = 'main.login' # Nom de la vue de connexion, si l'utilisateur n'est pas authentifié
 
 def seed_data(app):
     """Remplit la base de données avec les données initiales si nécessaire."""
     with app.app_context():
-        from .models import Niveau
+        from .models import Niveau, Filiere
         # Vérifie si la table Niveau est vide
         if Niveau.query.count() == 0:
             print("Base de données 'Niveau' vide. Remplissage...")
@@ -26,6 +26,21 @@ def seed_data(app):
             db.session.bulk_save_objects(niveaux_a_ajouter)
             db.session.commit()
             print("Niveaux d'étude ajoutés.")
+        
+        # Vérifie si la table Filiere est vide
+        if Filiere.query.count() == 0:
+            print("Base de données 'Filiere' vide. Remplissage...")
+            filieres_a_ajouter = [
+                Filiere(nom_filiere='Intelligence Artificielle (IA)'),
+                Filiere(nom_filiere='Système Embarqué et Internet des Objets (SEIOT)'),
+                Filiere(nom_filiere='Génie Logiciel (GL)'),
+                Filiere(nom_filiere='Sécurité en Informatique (SI)'),
+                Filiere(nom_filiere='Internet et Multimédia (IM)'),
+                Filiere(nom_filiere='SIRI')
+            ]
+            db.session.bulk_save_objects(filieres_a_ajouter)
+            db.session.commit()
+            print("Filières ajoutées.")
 
 def create_app():
     app = Flask(__name__)
@@ -34,6 +49,17 @@ def create_app():
     # Initialise les extensions avec l'application Flask
     db.init_app(app)
     login_manager.init_app(app)
+
+    @app.before_request
+    def before_request_callback():
+        """
+        Met à jour le champ 'last_seen' de l'utilisateur avant chaque requête.
+        """
+        from flask_login import current_user
+        from datetime import datetime
+        if current_user.is_authenticated:
+            current_user.last_seen = datetime.utcnow()
+            db.session.commit()
 
     # Importation et enregistrement des Blueprints (si vous en utilisez, sinon les routes directes)
     from app.routes import main_bp

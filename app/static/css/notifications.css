@@ -1,0 +1,22 @@
+.notification-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #fcb045; /* Jaune pour non lu */
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.notification-item.read {
+    border-left-color: rgba(255, 255, 255, 0.2); /* Gris pour lu */
+    opacity: 0.8;
+}
+
+.notification-title {
+    font-weight: 600;
+}
+
+.notification-date {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}

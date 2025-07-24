@@ -72,6 +72,7 @@ class Utilisateur(db.Model, UserMixin):
     mot_de_passe_hash = db.Column(db.String(128), nullable=False)
     # Utilisation de db.Enum pour le type ENUM de MySQL
     role = db.Column(db.Enum('etudiant', 'enseignant', 'administrateur'), default='etudiant', nullable=False)
+    last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Clés étrangères, nullable pour les enseignants/admins
     filiere_id = db.Column(db.Integer, db.ForeignKey('filieres.id'), nullable=True)
@@ -142,7 +143,7 @@ class Cours(db.Model):
     description = db.Column(db.Text)
 
     # Relation inverse: une affectation de cours est associée à un cours
-    cours_affectations = db.relationship('CoursAffectation', backref='cours_obj', lazy='dynamic')
+    cours_affectations = db.relationship('CoursAffectation', backref='cours_obj', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Cours {self.matiere_obj.code_matiere} - {self.date_cours} {self.heure_debut}>'

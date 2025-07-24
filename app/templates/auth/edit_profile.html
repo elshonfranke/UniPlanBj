@@ -25,7 +25,12 @@
             {% endwith %}
 
             <div class="input-box">
-                <input type="text" name="filiere" required placeholder="Filière (ex: Génie Logiciel)" value="{{ current_user.filiere_obj.nom_filiere if current_user.filiere_obj else '' }}"/>
+                <select name="filiere_id" required onchange="this.setAttribute('valid', 'true');">
+                    <option value="" disabled selected>Choisir une filière</option>
+                    {% for filiere in filieres %}
+                        <option value="{{ filiere.id }}" {% if current_user.filiere_id == filiere.id %}selected{% endif %}>{{ filiere.nom_filiere }}</option>
+                    {% endfor %}
+                </select>
                 <i class='bx bxs-book-content'></i>
             </div>
 

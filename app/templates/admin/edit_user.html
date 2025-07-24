@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier Utilisateur - UniPlanBJ</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+    <!-- On réutilise le style de la page de modification de profil pour la cohérence -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_profile.css') }}">
+</head>
+<body>
+    <div class="container">
+        <form method="post" action="{{ url_for('main.edit_user', user_id=user.id) }}"> 
+            <h1>Modifier le profil de <br><small>{{ user.prenom }} {{ user.nom }}</small></h1>
+
+            <div class="input-box">
+                <input type="text" name="prenom" required placeholder="Prénom" value="{{ user.prenom }}"/>
+                <i class='bx bxs-user'></i>
+            </div>
+
+            <div class="input-box">
+                <input type="text" name="nom" required placeholder="Nom" value="{{ user.nom }}"/>
+                <i class='bx bxs-user-detail'></i>
+            </div>
+
+            <div class="input-box">
+                <input type="email" name="email" required placeholder="Email" value="{{ user.email }}"/>
+                <i class='bx bxs-envelope'></i>
+            </div>
+
+            <div class="input-box">
+                <select name="role" required>
+                    <option value="etudiant" {% if user.role == 'etudiant' %}selected{% endif %}>Étudiant</option>
+                    <option value="enseignant" {% if user.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
+                    <option value="administrateur" {% if user.role == 'administrateur' %}selected{% endif %}>Administrateur</option>
+                </select>
+                <i class='bx bxs-graduation'></i>
+            </div>
+
+            <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
+            <div class="input-box">
+                <input type="password" name="pin" required placeholder="Entrez votre PIN pour confirmer" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"/>
+                <i class='bx bxs-key'></i>
+            </div>
+
+            <button type="submit" class="btn">Enregistrer les modifications</button>
+
+            <div class="dashboard-link">
+                <p><a href="{{ url_for('main.admin_dashboard') }}">Annuler et retourner au tableau de bord</a></p>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

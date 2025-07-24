@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation de l'Emploi du Temps - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/schedule.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1>Emploi du Temps Global</h1>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+        </a>
+    </header>
+
+    <main class="main-content container-fluid px-4">
+        <!-- Filtres -->
+        <div class="info-card mb-4">
+            <form method="GET" action="{{ url_for('main.schedule_viewer') }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-2">
+                        <label for="filiere_id" class="form-label">Filière</label>
+                        <select name="filiere_id" id="filiere_id" class="form-select">
+                            <option value="">Toutes</option>
+                            {% for filiere in filieres %}<option value="{{ filiere.id }}" {% if filiere_id == filiere.id %}selected{% endif %}>{{ filiere.nom_filiere }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="niveau_id" class="form-label">Niveau</label>
+                        <select name="niveau_id" id="niveau_id" class="form-select">
+                            <option value="">Tous</option>
+                            {% for niveau in niveaux %}<option value="{{ niveau.id }}" {% if niveau_id == niveau.id %}selected{% endif %}>{{ niveau.nom_niveau }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="enseignant_id" class="form-label">Enseignant</label>
+                        <select name="enseignant_id" id="enseignant_id" class="form-select">
+                            <option value="">Tous</option>
+                            {% for enseignant in enseignants %}<option value="{{ enseignant.id }}" {% if enseignant_id == enseignant.id %}selected{% endif %}>{{ enseignant.prenom }} {{ enseignant.nom }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="salle_id" class="form-label">Salle</label>
+                        <select name="salle_id" id="salle_id" class="form-select">
+                            <option value="">Toutes</option>
+                            {% for salle in salles %}<option value="{{ salle.id }}" {% if salle_id == salle.id %}selected{% endif %}>{{ salle.nom_salle }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('main.schedule_viewer') }}" class="btn btn-outline-secondary w-100">Réinitialiser</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Navigation de la semaine -->
+        <div class="week-nav d-flex justify-content-between align-items-center mb-4">
+            <a href="{{ url_for('main.schedule_viewer', week=week_offset-1, filiere_id=filiere_id, niveau_id=niveau_id, enseignant_id=enseignant_id, salle_id=salle_id) }}" class="btn btn-outline-light">&lt; Semaine Précédente</a>
+            <h4>Semaine du {{ days_of_week[0].strftime('%d/%m') }} au {{ days_of_week[6].strftime('%d/%m/%Y') }}</h4>
+            <a href="{{ url_for('main.schedule_viewer', week=week_offset+1, filiere_id=filiere_id, niveau_id=niveau_id, enseignant_id=enseignant_id, salle_id=salle_id) }}" class="btn btn-outline-light">Semaine Suivante &gt;</a>
+        </div>
+
+        <!-- Grille de l'emploi du temps -->
+        <div class="schedule-grid">
+            {% for i in range(7) %}
+            <div class="day-column">
+                <div class="day-header">{{ days_of_week[i].strftime('%A %d') }}</div>
+                <div class="courses-list">
+                    {% for course in schedule_by_day[i] %}
+                    <div class="course-item">
+                        <div class="course-time">{{ course.heure_debut.strftime('%H:%M') }} - {{ course.heure_fin.strftime('%H:%M') }}</div>
+                        <div class="course-title">{{ course.matiere_obj.nom_matiere }}</div>
+                        <div class="course-details">
+                            <i class="bi bi-person-fill"></i> {{ course.enseignant_obj.prenom }} {{ course.enseignant_obj.nom }}<br>
+                            <i class="bi bi-geo-alt-fill"></i> {{ course.salle_obj.nom_salle }}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-course-item">
+                        Aucun cours
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>

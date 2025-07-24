@@ -12,6 +12,15 @@
     <header class="dashboard-header d-flex justify-content-between align-items-center">
         <h1>Tableau de Bord Enseignant</h1>
         <div class="user-info d-flex align-items-center">
+            <a href="{{ url_for('main.notifications') }}" class="btn btn-outline-light me-3 position-relative">
+                <i class="bi bi-bell"></i>
+                {% if unread_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ unread_count }}
+                        <span class="visually-hidden">notifications non lues</span>
+                    </span>
+                {% endif %}
+            </a>
             <span>Bonjour, <strong>{{ current_user.prenom }}</strong></span>
             <a href="{{ url_for('main.logout') }}" class="btn-logout">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
