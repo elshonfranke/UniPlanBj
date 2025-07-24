@@ -7,4 +7,4 @@ if __name__ == '__main__':
     # Démarre le serveur de développement Flask
     # debug=True active le mode débogage (rechargement auto, débogueur interactif)
     # Utile pour le développement, mais JAMAIS en production !
-    app.run(debug=True, port=5100)
+    app.run(debug=True, port=5200)
