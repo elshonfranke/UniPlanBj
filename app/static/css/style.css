@@ -12,21 +12,6 @@
     100% { transform: scale(1.2); }
 }
 
-/* --- Variables de Couleur (Palette Recommandée) --- */
-:root {
-    /* Palette "Bleu Académique & Orange Vif" */
-    --color-primary: #0D2C54;      /* Bleu nuit pour les fonds et éléments principaux */
-    --color-accent: #F79F79;       /* Orange corail pour les boutons et accents */
-    --color-accent-gradient: linear-gradient(180deg, #F79F79, #F26A4F);
-    --color-text-light: #FFFFFF;   /* Blanc pour le texte principal */
-    --color-text-secondary: #E0E0E0; /* Gris clair pour le texte secondaire */
-
-    /* Couleurs pour les fonds "glassmorphism" */
-    --glass-bg-dark: rgba(0, 0, 0, 0.2);
-    --glass-bg-light: rgba(255, 255, 255, 0.2);
-    --glass-border: rgba(255, 255, 255, 0.15);
-}
-
 body {
     font-family: 'Montserrat', Arial, sans-serif;
     color: #fff; /* Texte par défaut en blanc pour un meilleur contraste */
@@ -56,18 +41,17 @@ main {
 
 /* Effet "Glassmorphism" pour le header */
 .header-custom {
-    background: var(--glass-bg-light);
-    border-radius: 90px 90px 90px 90px  ;
+    background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px); /* Pour Safari */
     border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    padding: 2rem 2rem;
-    box-shadow: 0px 8px 32px 0 rgba(31, 38, 135, 0.1);
+    padding: 2rem 0;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
 }
 
 .header-custom h1 {
     font-size: 3rem;
-    color: var(--color-text-light);
+    color: #fff;
     letter-spacing: 2px;
     font-weight: 600;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -75,26 +59,26 @@ main {
 
 .header-custom p {
     font-size: 1.2rem;
-    color: var(--color-text-secondary);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.918);
+    color: #f0f0f0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Icônes pour les cartes */
 .feature-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: var(--color-text-light);
+    color: #fff;
     text-shadow: 0 2px 8px rgba(131, 58, 180, 0.5);
 }
 
 /* Cartes avec effet "Glassmorphism" et lueur au survol */
 .feature-card {
-    background: var(--glass-bg-light);
+    background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid var(--glass-border);
-    border-radius: 0px 90px 90px 90px;
-    box-shadow: 150px 8px 32px 0 rgba(31, 38, 135, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
     color: #fff;
@@ -106,17 +90,17 @@ main {
 }
 
 .feature-card h3 {
-    color: var(--color-text-light);
+    color: #fff;
     font-weight: 600;
 }
 
 .feature-card p {
-    color: var(--color-text-secondary);
+    color: #e0e0e0;
 }
 
 /* Boutons personnalisés avec plus d'impact */
 .btn-primary-custom {
-    background: var(--color-accent-gradient);
+    background: linear-gradient(90deg, #fd1d1d, #fcb045);
     color: #fff;
     border: none;
     padding: 0.8rem 2rem;
@@ -130,7 +114,7 @@ main {
 
 .btn-primary-custom:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px color-mix(in srgb, var(--color-accent) 40%, transparent);
+    box-shadow: 0 8px 25px rgba(252, 176, 69, 0.4);
 }
 
 .btn-secondary-custom {
@@ -145,7 +129,7 @@ main {
 
 .btn-secondary-custom:hover {
     background-color: #fff;
-    color: var(--color-primary);
+    color: #833ab4; /* Violet principal de la nouvelle palette */
     transform: scale(1.05);
 }
 
@@ -182,7 +166,6 @@ footer {
     padding: 2rem;
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 50px ;
     height: 100%;
     color: #fff;
 }
