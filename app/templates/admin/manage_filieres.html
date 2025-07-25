@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Filières - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1>Gestion des Filières</h1>
+        <div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left-circle"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFiliereModal">
+            <i class="bi bi-plus-circle"></i> Ajouter une Filière
+        </button>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nom de la Filière</th>
+                        <th>Description</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for filiere in filieres %}
+                    <tr>
+                        <td><strong>{{ filiere.nom_filiere }}</strong></td>
+                        <td>{{ filiere.description or 'N/A' }}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editFiliereModal{{ filiere.id }}">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteFiliereModal{{ filiere.id }}">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal de Modification -->
+                    <div class="modal fade" id="editFiliereModal{{ filiere.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('main.edit_filiere', filiere_id=filiere.id) }}" class="text-dark">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier la Filière</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-start">
+                                        <div class="mb-3">
+                                            <label for="nom_filiere" class="form-label">Nom</label>
+                                            <input type="text" class="form-control" name="nom_filiere" value="{{ filiere.nom_filiere }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Description</label>
+                                            <textarea class="form-control" name="description" rows="3">{{ filiere.description or '' }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Suppression -->
+                    <div class="modal fade" id="deleteFiliereModal{{ filiere.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('main.delete_filiere', filiere_id=filiere.id) }}" class="text-dark">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirmer la Suppression</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-start">
+                                        <p>Êtes-vous sûr de vouloir supprimer la filière <strong>{{ filiere.nom_filiere }}</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible. La suppression échouera si la filière est déjà associée à des groupes ou des étudiants.</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Aucune filière trouvée.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal d'Ajout -->
+<div class="modal fade" id="addFiliereModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('main.manage_filieres') }}" class="text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajouter une nouvelle Filière</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label for="add_nom_filiere" class="form-label">Nom de la Filière</label>
+                        <input type="text" class="form-control" name="nom_filiere" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (optionnel)</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

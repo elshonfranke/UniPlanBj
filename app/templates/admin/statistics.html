@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1><i class="bi bi-bar-chart-line-fill"></i> Statistiques des Étudiants</h1>
+        <div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left-circle"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        <div class="row g-4">
+            <!-- Répartition par Filière -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Répartition par Filière</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Filière</th>
+                                    <th class="text-end">Nombre d'Étudiants</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for nom_filiere, count in stats_filiere %}
+                                <tr>
+                                    <td>{{ nom_filiere }}</td>
+                                    <td class="text-end"><strong>{{ count }}</strong></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-center">Aucune donnée disponible.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Répartition par Niveau -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-bar-chart-steps"></i> Répartition par Niveau</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th class="text-end">Nombre d'Étudiants</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for nom_niveau, count in stats_niveau %}
+                                <tr>
+                                    <td>{{ nom_niveau }}</td>
+                                    <td class="text-end"><strong>{{ count }}</strong></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="2" class="text-center">Aucune donnée disponible.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Répartition Détaillée -->
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-table"></i> Répartition Détaillée (Filière & Niveau)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Filière</th>
+                                        <th>Niveau</th>
+                                        <th class="text-end">Nombre d'Étudiants</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for nom_filiere, nom_niveau, count in stats_detaillees %}
+                                    <tr>
+                                        <td>{{ nom_filiere }}</td>
+                                        <td>{{ nom_niveau }}</td>
+                                        <td class="text-end"><strong>{{ count }}</strong></td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center">Aucun étudiant n'est encore assigné à une filière et un niveau.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Matières - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1>Gestion des Matières</h1>
+        <div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left-circle"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row g-4">
+            <!-- Formulaire d'ajout -->
+            <div class="col-lg-4">
+                <div class="info-card">
+                    <h3><i class="bi bi-plus-square"></i> Ajouter une matière</h3>
+                    <form method="POST" action="{{ url_for('main.manage_matieres') }}">
+                        <div class="mb-3">
+                            <label for="code_matiere" class="form-label">Code Matière</label>
+                            <input type="text" class="form-control" id="code_matiere" name="code_matiere" required placeholder="Ex: INF101">
+                        </div>
+                        <div class="mb-3">
+                            <label for="nom_matiere" class="form-label">Nom de la matière</label>
+                            <input type="text" class="form-control" id="nom_matiere" name="nom_matiere" required placeholder="Ex: Algorithmique">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description (optionnel)</label>
+                            <input type="text" class="form-control" id="description" name="description" placeholder="Ex: Introduction aux structures de données">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Liste des matières -->
+            <div class="col-lg-8">
+                <div class="table-card">
+                    <h3 class="mb-3"><i class="bi bi-book"></i> Matières existantes</h3>
+                    <div class="table-responsive">
+                        <table class="table table-borderless schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Nom</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for matiere in matieres %}
+                                <tr>
+                                    <td>{{ matiere.code_matiere }}</td>
+                                    <td>{{ matiere.nom_matiere }}</td>
+                                    <td>{{ matiere.description or 'N/A' }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editMatiereModal" 
+                                                data-matiere-id="{{ matiere.id }}" 
+                                                data-matiere-code="{{ matiere.code_matiere }}" 
+                                                data-matiere-nom="{{ matiere.nom_matiere }}" 
+                                                data-matiere-description="{{ matiere.description or '' }}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteMatiereModal" 
+                                                data-matiere-id="{{ matiere.id }}" 
+                                                data-matiere-nom="{{ matiere.nom_matiere }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-4">Aucune matière n'a été ajoutée.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Modification -->
+    <div class="modal fade" id="editMatiereModal" tabindex="-1" aria-labelledby="editMatiereModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="editMatiereModalLabel">Modifier la matière</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editMatiereForm" method="POST" action="">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit_code_matiere" class="form-label">Code Matière</label>
+                            <input type="text" class="form-control" id="edit_code_matiere" name="code_matiere" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_nom_matiere" class="form-label">Nom de la matière</label>
+                            <input type="text" class="form-control" id="edit_nom_matiere" name="nom_matiere" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_description" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="edit_description" name="description">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-warning">Enregistrer les modifications</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Suppression -->
+    <div class="modal fade" id="deleteMatiereModal" tabindex="-1" aria-labelledby="deleteMatiereModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title" id="deleteMatiereModalLabel">Confirmer la Suppression</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="deleteMatiereForm" method="POST" action="">
+            <div class="modal-body">
+              <p>Êtes-vous sûr de vouloir supprimer la matière <strong id="matiereNameToDelete"></strong> ?</p>
+              <p class="text-warning"><small>Cette action est irréversible. Assurez-vous que la matière n'est pas utilisée par un cours.</small></p>
+            </div>
+            <div class="modal-footer border-secondary">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-danger">Supprimer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Script pour la modale de modification
+        var editModal = document.getElementById('editMatiereModal');
+        editModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var matiereId = button.getAttribute('data-matiere-id');
+            var matiereCode = button.getAttribute('data-matiere-code');
+            var matiereNom = button.getAttribute('data-matiere-nom');
+            var matiereDescription = button.getAttribute('data-matiere-description');
+
+            var form = editModal.querySelector('#editMatiereForm');
+            form.action = '/admin/matiere/edit/' + matiereId;
+            form.querySelector('#edit_code_matiere').value = matiereCode;
+            form.querySelector('#edit_nom_matiere').value = matiereNom;
+            form.querySelector('#edit_description').value = matiereDescription;
+        });
+
+        // Script pour la modale de suppression
+        var deleteModal = document.getElementById('deleteMatiereModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var matiereId = button.getAttribute('data-matiere-id');
+            var matiereNom = button.getAttribute('data-matiere-nom');
+
+            var form = deleteModal.querySelector('#deleteMatiereForm');
+            form.action = '/admin/matiere/delete/' + matiereId;
+            deleteModal.querySelector('#matiereNameToDelete').textContent = matiereNom;
+        });
+    });
+    </script>
+</body>
+</html>

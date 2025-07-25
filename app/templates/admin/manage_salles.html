@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Salles - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1>Gestion des Salles</h1>
+        <div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left-circle"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                                <div class="row">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row g-4">
+            <!-- Formulaire d'ajout -->
+            <div class="col-lg-4">
+                <div class="info-card">
+                    <h3><i class="bi bi-plus-square"></i> Ajouter une salle</h3>
+                    <form method="POST" action="{{ url_for('main.manage_salles') }}">
+                        <div class="mb-3">
+                            <label for="nom_salle" class="form-label">Nom de la salle</label>
+                            <input type="text" class="form-control" id="nom_salle" name="nom_salle" required placeholder="Ex: Amphi A">
+                        </div>
+                        <div class="mb-3">
+                            <label for="capacite" class="form-label">Capacité</label>
+                            <input type="number" class="form-control" id="capacite" name="capacite" required min="1" placeholder="Ex: 150">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Liste des salles -->
+            <div class="col-lg-8">
+                <div class="table-card">
+                    <h3 class="mb-3"><i class="bi bi-door-open"></i> Salles existantes</h3>
+                    <div class="table-responsive">
+                        <table class="table table-borderless schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Capacité</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for salle in salles %}
+                                <tr>
+                                    <td>{{ salle.nom_salle }}</td>
+                                    <td>{{ salle.capacite }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editSalleModal" data-salle-id="{{ salle.id }}" data-salle-nom="{{ salle.nom_salle }}" data-salle-capacite="{{ salle.capacite }}">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteSalleModal" data-salle-id="{{ salle.id }}" data-salle-nom="{{ salle.nom_salle }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center py-4">Aucune salle n'a été ajoutée.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Modification -->
+    <div class="modal fade" id="editSalleModal" tabindex="-1" aria-labelledby="editSalleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-white">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title" id="editSalleModalLabel">Modifier la salle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editSalleForm" method="POST" action="">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit_nom_salle" class="form-label">Nom de la salle</label>
+                            <input type="text" class="form-control" id="edit_nom_salle" name="nom_salle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_capacite" class="form-label">Capacité</label>
+                            <input type="number" class="form-control" id="edit_capacite" name="capacite" required min="1">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-warning">Enregistrer les modifications</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Suppression -->
+    <div class="modal fade" id="deleteSalleModal" tabindex="-1" aria-labelledby="deleteSalleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white">
+          <div class="modal-header border-secondary">
+            <h5 class="modal-title" id="deleteSalleModalLabel">Confirmer la Suppression</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <form id="deleteSalleForm" method="POST" action="">
+            <div class="modal-body">
+              <p>Êtes-vous sûr de vouloir supprimer la salle <strong id="salleNameToDelete"></strong> ?</p>
+              <p class="text-warning"><small>Cette action est irréversible. Assurez-vous que la salle n'est pas utilisée par un cours.</small></p>
+            </div>
+            <div class="modal-footer border-secondary">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+              <button type="submit" class="btn btn-danger">Supprimer</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Script pour la modale de modification
+        var editModal = document.getElementById('editSalleModal');
+        editModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var salleId = button.getAttribute('data-salle-id');
+            var salleNom = button.getAttribute('data-salle-nom');
+            var salleCapacite = button.getAttribute('data-salle-capacite');
+
+            var form = editModal.querySelector('#editSalleForm');
+            form.action = '/admin/salle/edit/' + salleId;
+            form.querySelector('#edit_nom_salle').value = salleNom;
+            form.querySelector('#edit_capacite').value = salleCapacite;
+        });
+
+        // Script pour la modale de suppression
+        var deleteModal = document.getElementById('deleteSalleModal');
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            var salleId = button.getAttribute('data-salle-id');
+            var salleNom = button.getAttribute('data-salle-nom');
+
+            var form = deleteModal.querySelector('#deleteSalleForm');
+            form.action = '/admin/salle/delete/' + salleId;
+            deleteModal.querySelector('#salleNameToDelete').textContent = salleNom;
+        });
+    });
+    </script>
+</body>
+\ No newline at end of file
+</html>
+

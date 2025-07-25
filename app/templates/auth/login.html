@@ -44,7 +44,7 @@
 
         <div class="remember-forgot">
           <label><input type="checkbox" name="remember" /> Se souvenir de moi</label>
-          <a href="#">Mot de passe oublié?</a>
+          <a href="{{ url_for('main.request_reset_token') }}">Mot de passe oublié?</a>
         </div>
 
         <button type="submit" class="btn">Connexion</button>

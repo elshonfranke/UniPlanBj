@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Niveaux - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1>Gestion des Niveaux</h1>
+        <div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left-circle"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addNiveauModal">
+            <i class="bi bi-plus-circle"></i> Ajouter un Niveau
+        </button>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nom du Niveau</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for niveau in niveaux %}
+                    <tr>
+                        <td><strong>{{ niveau.nom_niveau }}</strong></td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editNiveauModal{{ niveau.id }}">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteNiveauModal{{ niveau.id }}">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal de Modification -->
+                    <div class="modal fade" id="editNiveauModal{{ niveau.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('main.edit_niveau', niveau_id=niveau.id) }}" class="text-dark">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Modifier le Niveau</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body text-start">
+                                        <label for="nom_niveau" class="form-label">Nom</label>
+                                        <input type="text" class="form-control" name="nom_niveau" value="{{ niveau.nom_niveau }}" required>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Suppression -->
+                    <div class="modal fade" id="deleteNiveauModal{{ niveau.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('main.delete_niveau', niveau_id=niveau.id) }}" class="text-dark">
+                                    <div class="modal-header"><h5 class="modal-title">Confirmer la Suppression</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                    <div class="modal-body text-start">
+                                        <p>Êtes-vous sûr de vouloir supprimer le niveau <strong>{{ niveau.nom_niveau }}</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible. La suppression échouera si le niveau est déjà associé à des groupes ou des étudiants.</p>
+                                    </div>
+                                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-danger">Supprimer</button></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <tr><td colspan="2" class="text-center">Aucun niveau trouvé.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal d'Ajout -->
+<div class="modal fade" id="addNiveauModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('main.manage_niveaux') }}" class="text-dark">
+                <div class="modal-header"><h5 class="modal-title">Ajouter un nouveau Niveau</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body text-start">
+                    <label for="nom_niveau" class="form-label">Nom du Niveau</label>
+                    <input type="text" class="form-control" name="nom_niveau" required placeholder="Ex: Licence 1 (L1)">
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-primary">Ajouter</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

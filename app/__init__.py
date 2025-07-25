@@ -1,13 +1,17 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_mail import Mail
 import os
+from flask_socketio import SocketIO
 from app.config import Config # Importe votre classe de configuration
 
 # Initialisation des extensions
 db = SQLAlchemy()
+mail = Mail()
 login_manager = LoginManager()
 login_manager.login_view = 'main.login' # Nom de la vue de connexion, si l'utilisateur n'est pas authentifié
+socketio = SocketIO()
 
 def seed_data(app):
     """Remplit la base de données avec les données initiales si nécessaire."""
@@ -48,7 +52,9 @@ def create_app():
 
     # Initialise les extensions avec l'application Flask
     db.init_app(app)
+    mail.init_app(app)
     login_manager.init_app(app)
+    socketio.init_app(app)
 
     @app.before_request
     def before_request_callback():
@@ -71,4 +77,4 @@ def create_app():
         db.create_all() # Crée toutes les tables définies dans models.py
         seed_data(app) # Appelle la fonction pour remplir les données
 
-    return app
+    return app, socketio

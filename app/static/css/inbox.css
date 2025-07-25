@@ -1,0 +1,369 @@
+/* app/static/css/inbox.css */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+/* --- Animations de l'arrière-plan (cohérence avec le reste du site) --- */
+@keyframes image-slideshow {
+    0%, 100% { background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop'); }
+    25%      { background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'); }
+    50%      { background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop'); }
+    75%      { background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2153&auto=format&fit=crop'); }
+}
+
+@keyframes ken-burns {
+    0%   { transform: scale(1.1); }
+    100% { transform: scale(1.2); }
+}
+
+@keyframes message-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Variables de thème pour une maintenance facile */
+:root {
+    --brand-gradient: linear-gradient(90deg, #fd1d1d, #fcb045);
+    --brand-orange: #fcb045;
+    --brand-red: #fd1d1d;
+    --text-light: #ffffff;
+    --text-muted-light: rgba(255, 255, 255, 0.7);
+    --glass-bg: rgba(22, 22, 22, 0.4);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-highlight: rgba(255, 255, 255, 0.2);
+}
+
+body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    color: var(--text-light);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden; /* Empêche le défilement du body */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: -1;
+  background-size: cover;
+  background-position: center;
+  animation: 
+    image-slideshow 30s linear infinite,
+    ken-burns 45s ease-in-out infinite alternate;
+}
+
+.inbox-container {
+    display: flex;
+    height: calc(100vh - 4rem);
+    width: calc(100vw - 4rem);
+    max-width: 1400px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    overflow: hidden; /* Pour que les enfants respectent le border-radius */
+}
+
+/* --- Colonne de gauche : Sidebar --- */
+.inbox-sidebar {
+    width: 350px;
+    min-width: 300px;
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.2); /* Un peu plus sombre pour le contraste */
+}
+
+.inbox-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: transparent;
+    flex-shrink: 0;
+}
+
+.inbox-header h3, .inbox-header h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+.conversation-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+}
+
+.conversation-list .list-group-item {
+    border-radius: 0;
+    border: none;
+    background: transparent;
+    color: var(--text-light);
+    padding: 1rem 1.5rem;
+    transition: background-color 0.3s ease;
+    border-left: 4px solid transparent;
+    cursor: pointer;
+    position: relative; /* Pour le positionnement de l'indicateur "non lu" */
+}
+
+.conversation-list .list-group-item.active {
+    background-color: var(--glass-highlight);
+    border-left-color: var(--brand-orange);
+}
+
+.conversation-list .list-group-item.active .text-muted {
+    color: var(--text-muted-light) !important;
+}
+
+.conversation-list .list-group-item h6 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.conversation-list .list-group-item:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Indicateur de message non lu --- */
+/* Ajoutez la classe .unread à un .list-group-item pour le marquer comme non lu */
+.conversation-list .list-group-item.unread h6 {
+    font-weight: 700; /* Titre plus visible */
+}
+
+.conversation-list .list-group-item.unread .text-muted {
+    color: var(--text-light) !important; /* Aperçu du message plus visible */
+    font-weight: 500;
+}
+
+.conversation-list .list-group-item.unread::after {
+    content: '';
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: var(--brand-orange);
+    border-radius: 50%;
+}
+
+/* --- Colonne de droite : Conversation --- */
+.inbox-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: transparent;
+}
+
+.inbox-main .inbox-header {
+    background: rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.message-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column; /* Affiche les messages du plus ancien au plus récent */
+    gap: 1rem; /* Espace entre les bulles de message */
+}
+
+.message {
+    display: flex;
+    max-width: 75%;
+    align-items: flex-end;
+    animation: message-fade-in 0.4s ease-out;
+}
+
+.message-body {
+    padding: 0.8rem 1.2rem;
+    border-radius: 1.2rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.message-timestamp {
+    font-size: 0.75rem;
+    color: var(--text-muted-light);
+    margin: 0 0.5rem;
+    white-space: nowrap;
+    padding-bottom: 5px;
+}
+
+/* Messages reçus (à gauche) */
+.message.received {
+    align-self: flex-start;
+}
+
+.message.received .message-body {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-bottom-left-radius: 0.5rem;
+}
+
+/* Messages envoyés (à droite) */
+.message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.sent .message-body {
+    background: var(--brand-gradient);
+    color: var(--text-light);
+    border-bottom-right-radius: 0.5rem;
+}
+
+.reply-area {
+    padding: 1rem 1.5rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-top: 1px solid var(--glass-border);
+    flex-shrink: 0;
+}
+
+/* --- Barre d'outils de formatage --- */
+/* À placer dans le .reply-area, avant le formulaire de message */
+.format-toolbar {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.format-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted-light);
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.format-btn:hover {
+    background-color: var(--glass-highlight);
+    color: var(--text-light);
+}
+
+.format-btn.active {
+    background-color: var(--brand-orange);
+    color: var(--text-light);
+}
+
+.reply-area .form-control {
+    border-radius: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    color: var(--text-light);
+    padding: 0.75rem 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.reply-area .form-control::placeholder {
+    color: var(--text-muted-light);
+}
+
+.reply-area .form-control:focus {
+    box-shadow: 0 0 15px rgba(252, 176, 69, 0.3);
+    border-color: var(--brand-orange);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.reply-area .btn {
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--brand-gradient);
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reply-area .btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(252, 176, 69, 0.5);
+}
+
+/* Placeholder pour quand aucune conversation n'est sélectionnée */
+.inbox-main .bi-chat-square-dots-fill {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 5rem;
+}
+
+/* --- Scrollbar personnalisée --- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .inbox-container {
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .inbox-sidebar {
+        width: 100%;
+        height: 40vh; /* La sidebar prend une partie de l'écran */
+        min-width: unset;
+        border-right: none;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    .inbox-main {
+        height: 60vh; /* Le reste de l'écran pour la conversation */
+    }
+
+    .message {
+        max-width: 90%;
+    }
+}
+
+/* --- Indicateur "En train d'écrire..." --- */
+.typing-indicator {
+    font-size: 0.8rem;
+    color: var(--text-muted-light);
+    font-style: italic;
+    margin-top: 0.5rem;
+    text-align: left; /* Aligné à gauche par défaut */
+    display: none; /* Masqué par défaut */
+}
+
+.typing-indicator.active {
+    display: block; /* Affiche l'indicateur quand la classe .active est présente */
+}

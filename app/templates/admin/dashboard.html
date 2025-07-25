@@ -22,6 +22,14 @@
                     </span>
                 {% endif %}
             </a>
+            <a href="{{ url_for('main.inbox') }}" class="btn btn-outline-light me-2 position-relative">
+                <i class="bi bi-chat-dots"></i>
+                {% if unread_messages_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ unread_messages_count }}
+                    </span>
+                {% endif %}
+            </a>
             <span class="me-3">Admin: <strong>{{ current_user.prenom }}</strong></span>
             <a href="{{ url_for('main.logout') }}" class="btn-logout me-2">
                 <i class="bi bi-box-arrow-right"></i> <span class="d-none d-sm-inline">Déconnexion</span>
@@ -33,6 +41,54 @@
     </header>
 
     <main class="main-content container">
+        <!-- Section des Statistiques -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card text-center p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-people-fill fs-2 me-3 text-primary"></i>
+                        <div>
+                            <h4 class="mb-0">{{ total_users or 0 }}</h4>
+                            <p class="mb-0 text-white-50">Utilisateurs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card text-center p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-calendar-check fs-2 me-3 text-success"></i>
+                        <div>
+                            <h4 class="mb-0">{{ total_courses or 0 }}</h4>
+                            <p class="mb-0 text-white-50">Cours Planifiés</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card text-center p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-door-open-fill fs-2 me-3 text-warning"></i>
+                        <div>
+                            <h4 class="mb-0">{{ total_salles or 0 }}</h4>
+                            <p class="mb-0 text-white-50">Salles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card text-center p-3">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <i class="bi bi-book-fill fs-2 me-3 text-info"></i>
+                        <div>
+                            <h4 class="mb-0">{{ total_matieres or 0 }}</h4>
+                            <p class="mb-0 text-white-50">Matières</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row g-4">
             <!-- Carte de gestion de l'emploi du temps -->
             <div class="col-12">
@@ -48,6 +104,103 @@
                     <a href="{{ url_for('main.schedule_viewer') }}" class="btn btn-outline-success ms-2">
                         <i class="bi bi-grid-3x3-gap"></i> Visualiser l'Emploi du Temps
                     </a>
+                    <a href="{{ url_for('main.admin_stats') }}" class="btn btn-outline-info ms-2">
+                        <i class="bi bi-bar-chart-line-fill"></i> Voir les Statistiques
+                    </a>
+                </div>
+            </div>
+            <!-- Carte de gestion des données de base -->
+            <div class="col-12">
+                <div class="info-card">
+                    <h3><i class="bi bi-database-fill-gear"></i> Gestion des Données de Base</h3>
+                    <p>Gérez les entités fondamentales de l'application comme les salles, les matières, les filières, etc.</p>
+                    <a href="{{ url_for('main.manage_salles') }}" class="btn btn-secondary me-2">
+                        <i class="bi bi-door-open"></i> Gérer les Salles
+                    </a>
+                    <a href="{{ url_for('main.manage_matieres') }}" class="btn btn-secondary me-2">
+                        <i class="bi bi-book"></i> Gérer les Matières
+                    </a>
+                    <a href="{{ url_for('main.manage_filieres') }}" class="btn btn-secondary me-2">
+                        <i class="bi bi-diagram-3"></i> Gérer les Filières
+                    </a>
+                    <a href="{{ url_for('main.manage_niveaux') }}" class="btn btn-secondary me-2">
+                        <i class="bi bi-bar-chart-steps"></i> Gérer les Niveaux
+                    </a>
+                     <a href="{{ url_for('main.manage_groupes') }}" class="btn btn-secondary">
+                        <i class="bi bi-people"></i> Gérer les Groupes
+                    </a>
+                </div>
+            </div>
+            <!-- Carte de création d'annonce -->
+            <div class="col-12">
+                <div class="info-card">
+                    <h3><i class="bi bi-megaphone-fill"></i> Créer une Annonce</h3>
+                    <p>Envoyez une notification à tous les utilisateurs ou à un groupe spécifique (étudiants, enseignants).</p>
+                    <form action="{{ url_for('main.create_notification') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Titre de l'annonce</label>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="Ex: Maintenance prévue ce week-end" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea class="form-control" id="message" name="message" rows="3" placeholder="Détaillez votre annonce ici..." required></textarea>
+                        </div>
+                        <div class="row align-items-end">
+                            <div class="col-md-9 mb-3 mb-md-0">
+                                <label for="role" class="form-label">Destinataire</label>
+                                <select class="form-select" id="role" name="role">
+                                    <option value="all">Tous les utilisateurs</option>
+                                    <option value="etudiant">Étudiants seulement</option>
+                                    <option value="enseignant">Enseignants seulement</option>
+                                    <option value="administrateur">Administrateurs seulement</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3"><button type="submit" class="btn btn-primary w-100">Envoyer</button></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <!-- Carte de gestion des annonces -->
+            <div class="col-12">
+                <div class="info-card">
+                    <h3><i class="bi bi-list-ul"></i> Annonces Publiées</h3>
+                    <div class="table-responsive">
+                        <table class="table table-borderless schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Message</th>
+                                    <th>Destinataire</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for annonce in announcements %}
+                                <tr>
+                                    <td>{{ annonce.titre }}</td>
+                                    <td>{{ annonce.message|truncate(50, True) }}</td>
+                                    <td><span class="badge bg-info">{{ annonce.destinataire_role|capitalize }}</span></td>
+                                    <td><small>{{ annonce.date_creation.strftime('%d/%m/%Y à %Hh%M') }}</small></td>
+                                    <td>
+                                        <a href="{{ url_for('main.edit_notification', notification_id=annonce.id) }}" class="btn btn-sm btn-outline-warning me-1" title="Modifier">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form action="{{ url_for('main.delete_notification', notification_id=annonce.id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?');" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-3">Aucune annonce n'a été publiée.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <!-- Carte des notifications récentes pour l'admin -->
@@ -139,6 +292,12 @@
                                         <td>
                                             <!-- Bouton Modifier fonctionnel -->
                                             <a href="{{ url_for('main.edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                                            <!-- Bouton Contacter -->
+                                            {% if user.id != current_user.id %}
+                                            <a href="{{ url_for('main.start_conversation', recipient_id=user.id) }}" class="btn btn-sm btn-outline-info" title="Contacter {{ user.prenom }}">
+                                                <i class="bi bi-chat-dots"></i>
+                                            </a>
+                                            {% endif %}
                                             <!-- Bouton pour déclencher le modal de suppression -->
                                             <button type="button" class="btn btn-sm btn-outline-danger" 
                                                     data-bs-toggle="modal" 

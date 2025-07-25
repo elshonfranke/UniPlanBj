@@ -1,54 +1,88 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modifier Utilisateur - UniPlanBJ</title>
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
-    <!-- On réutilise le style de la page de modification de profil pour la cohérence -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_profile.css') }}">
-</head>
-<body>
-    <div class="container">
-        <form method="post" action="{{ url_for('main.edit_user', user_id=user.id) }}"> 
-            <h1>Modifier le profil de <br><small>{{ user.prenom }} {{ user.nom }}</small></h1>
+{% extends "base.html" %}
 
-            <div class="input-box">
-                <input type="text" name="prenom" required placeholder="Prénom" value="{{ user.prenom }}"/>
-                <i class='bx bxs-user'></i>
+{% block title %}Modifier l'Utilisateur - Admin{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Modifier le profil de {{ user.prenom }} {{ user.nom }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('main.edit_user', user_id=user.id) }}">
+                        
+                        <div class="mb-3">
+                            <label for="prenom" class="form-label">Prénom</label>
+                            <input type="text" class="form-control" id="prenom" name="prenom" value="{{ user.prenom }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nom" class="form-label">Nom</label>
+                            <input type="text" class="form-control" id="nom" name="nom" value="{{ user.nom }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Rôle</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="etudiant" {% if user.role == 'etudiant' %}selected{% endif %}>Étudiant</option>
+                                <option value="enseignant" {% if user.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
+                                <option value="administrateur" {% if user.role == 'administrateur' %}selected{% endif %}>Administrateur</option>
+                            </select>
+                        </div>
+
+                        {# Section conditionnelle pour l'assignation de groupe #}
+                        {% if user.role == 'etudiant' %}
+                        <div class="mb-3 border p-3 rounded bg-light">
+                            <h5 class="mb-3">Assignation Académique</h5>
+                            <label for="groupe_id" class="form-label">Groupe de TD/TP</label>
+                            <select class="form-select" id="groupe_id" name="groupe_id">
+                                <option value="">-- Aucun Groupe --</option>
+                                {% for groupe in groupes %}
+                                    <option value="{{ groupe.id }}" {% if user.groupe_id == groupe.id %}selected{% endif %}>
+                                        {{ groupe.filiere_obj.nom_filiere }} - {{ groupe.niveau_obj.nom_niveau }} - {{ groupe.nom_groupe }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                L'assignation à un groupe mettra automatiquement à jour la filière et le niveau de l'étudiant.
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label for="pin" class="form-label">Code PIN de sécurité</label>
+                            <input type="password" class="form-control" id="pin" name="pin" required autocomplete="off" placeholder="Entrez votre PIN pour confirmer">
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-secondary me-md-2">Annuler</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-
-            <div class="input-box">
-                <input type="text" name="nom" required placeholder="Nom" value="{{ user.nom }}"/>
-                <i class='bx bxs-user-detail'></i>
-            </div>
-
-            <div class="input-box">
-                <input type="email" name="email" required placeholder="Email" value="{{ user.email }}"/>
-                <i class='bx bxs-envelope'></i>
-            </div>
-
-            <div class="input-box">
-                <select name="role" required>
-                    <option value="etudiant" {% if user.role == 'etudiant' %}selected{% endif %}>Étudiant</option>
-                    <option value="enseignant" {% if user.role == 'enseignant' %}selected{% endif %}>Enseignant</option>
-                    <option value="administrateur" {% if user.role == 'administrateur' %}selected{% endif %}>Administrateur</option>
-                </select>
-                <i class='bx bxs-graduation'></i>
-            </div>
-
-            <hr style="border-color: rgba(255,255,255,0.2); margin: 30px 0;">
-            <div class="input-box">
-                <input type="password" name="pin" required placeholder="Entrez votre PIN pour confirmer" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"/>
-                <i class='bx bxs-key'></i>
-            </div>
-
-            <button type="submit" class="btn">Enregistrer les modifications</button>
-
-            <div class="dashboard-link">
-                <p><a href="{{ url_for('main.admin_dashboard') }}">Annuler et retourner au tableau de bord</a></p>
-            </div>
-        </form>
+        </div>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('role').addEventListener('change', function() {
+    // Affiche un avertissement si le rôle est changé, car la page doit être rechargée
+    // pour afficher/masquer le champ "Groupe".
+    alert("Le changement de rôle sera appliqué après avoir enregistré. La page pourrait se recharger pour afficher les options pertinentes.");
+});
+</script>
+{% endblock %}

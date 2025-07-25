@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messagerie - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inbox.css') }}">
+</head>
+<body>
+    <div class="inbox-container">
+        <!-- Colonne de gauche : Liste des conversations -->
+        <div class="inbox-sidebar">
+            <div class="inbox-header">
+                <h3>Messagerie</h3>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-sm btn-outline-secondary" title="Retour au tableau de bord"><i class="bi bi-arrow-left"></i></a>
+            </div>
+            <div class="list-group list-group-flush conversation-list">
+                {% for conv in conversations %}
+                    {% set other_user = conv.get_other_participant(current_user) %}
+                    {% if other_user %}
+                        <a href="{{ url_for('main.inbox', conversation_id=conv.id) }}" class="list-group-item list-group-item-action {% if active_conversation and active_conversation.id == conv.id %}active{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ other_user.prenom }} {{ other_user.nom }}</h6>
+                                <small class="text-muted">{{ conv.last_message_time.strftime('%d/%m') }}</small>
+                            </div>
+                            <p class="mb-1 text-muted small">
+                                {% set last_msg = conv.last_message() %}
+                                {% if last_msg %}
+                                    {% if last_msg.sender_id == current_user.id %}Vous: {% endif %}
+                                    {{ last_msg.body|truncate(30, True) }}
+                                {% else %}
+                                    <em>Début de la conversation</em>
+                                {% endif %}
+                            </p>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center p-4 text-muted">
+                        <p>Aucune conversation.</p>
+                        <p><small>Utilisez le bouton "Contacter" sur le profil d'un utilisateur pour commencer.</small></p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Colonne de droite : Vue de la conversation active -->
+        <div class="inbox-main">
+            {% if active_conversation %}
+                {% set other_user = active_conversation.get_other_participant(current_user) %}
+                <div class="inbox-header">
+                    <h4>{{ other_user.prenom }} {{ other_user.nom }}</h4>
+                </div>
+                <div class="message-area" id="messages-container">
+                    {% for message in messages %}
+                        <div class="message {% if message.sender_id == current_user.id %}sent{% else %}received{% endif %}" data-message-id="{{ message.id }}">
+                            <div class="message-body">
+                                {{ message.body|safe }}
+                            </div>
+                            <div class="message-meta">
+                                <span class="timestamp">{{ message.timestamp.strftime('%H:%M') }}</span>
+                                {# -- NOUVEL INDICATEUR DE STATUT (uniquement pour les messages envoyés) -- #}
+                                {% if message.sender_id == current_user.id %}
+                                    <span class="message-status" id="status-{{ message.id }}">
+                                        {% if message.is_read %}
+                                            <i class="bi bi-check2-all" title="Vu"></i>
+                                        {% else %}
+                                            <i class="bi bi-check2" title="Envoyé"></i>
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="reply-area position-relative">
+                    {# -- Le conteneur du picker d'emojis -- #}
+                    <div id="emoji-picker-container" class="position-absolute" style="display: none; bottom: 50px; z-index: 10;">
+                        <emoji-picker class="light"></emoji-picker>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('main.send_reply', conversation_id=active_conversation.id) }}">
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" type="button" id="emoji-toggle-button" title="Insérer un emoji">
+                                <i class="bi bi-emoji-smile"></i>
+                            </button>
+                            <input type="text" id="message-input" name="body" class="form-control" placeholder="Écrivez votre message..." autocomplete="off" required>
+                            <button class="btn btn-primary" type="submit"><i class="bi bi-send-fill"></i></button>
+                        </div>
+                    </form>
+                </div>
+            {% else %}
+                <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center text-muted">
+                    <i class="bi bi-chat-square-dots-fill" style="font-size: 4rem;"></i>
+                    <h4 class="mt-3">Sélectionnez une conversation</h4>
+                    <p>Ou démarrez-en une nouvelle depuis la liste des utilisateurs.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# -- SCRIPT POUR LA MISE À JOUR EN TEMPS RÉEL -- #}
+    {% if active_conversation %}
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+    <script src="https://cdn.socket.io/4.5.2/socket.io.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messages-container');
+            if (messagesContainer) {
+                // Fait défiler la zone de message vers le bas pour afficher le dernier message
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // --- DEBUT: Logique pour le sélecteur d'emojis ---
+            const emojiToggleButton = document.getElementById('emoji-toggle-button');
+            const emojiPickerContainer = document.getElementById('emoji-picker-container');
+            const messageInput = document.getElementById('message-input');
+            const emojiPicker = document.querySelector('emoji-picker');
+
+            if (emojiToggleButton && emojiPickerContainer && messageInput && emojiPicker) {
+                // 1. Afficher/Cacher le sélecteur d'emojis
+                emojiToggleButton.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Empêche la propagation au document
+                    const isHidden = emojiPickerContainer.style.display === 'none';
+                    emojiPickerContainer.style.display = isHidden ? 'block' : 'none';
+                });
+
+                // 2. Insérer l'emoji dans le champ de texte
+                emojiPicker.addEventListener('emoji-click', event => {
+                    messageInput.value += event.detail.unicode;
+                    messageInput.focus(); // Redonne le focus au champ de texte
+                });
+
+                // 3. Cacher le sélecteur si on clique en dehors
+                document.addEventListener('click', (event) => {
+                    if (!emojiPickerContainer.contains(event.target) && emojiPickerContainer.style.display === 'block') {
+                        emojiPickerContainer.style.display = 'none';
+                    }
+                });
+            }
+            // --- FIN: Logique pour le sélecteur d'emojis ---
+
+            // Connexion à Socket.IO
+            const socket = io();
+
+            // Récupérer les IDs depuis le template Jinja2
+            const activeConversationId = {{ active_conversation.id }};
+            const currentUserId = {{ current_user.id }};
+
+            // 1. Rejoindre la "room" de la conversation
+            socket.emit('join', { 'conversation_id': activeConversationId });
+
+            // Gérer le départ de la room en quittant la page
+            window.addEventListener('beforeunload', () => {
+                socket.emit('leave', { 'conversation_id': activeConversationId });
+            });
+
+            // 2. Écouter les nouveaux messages
+            socket.on('new_message', function(data) {
+                // S'assurer que le message est pour la conversation actuelle
+                if (data.conversation_id === activeConversationId) {
+                    const messageIsFromCurrentUser = data.sender.id === currentUserId;
+                    const messageClass = messageIsFromCurrentUser ? 'sent' : 'received';
+
+                    // Créer le HTML pour le nouveau message
+                    const messageElement = document.createElement('div');
+                    messageElement.classList.add('message', messageClass);
+                    messageElement.dataset.messageId = data.id;
+
+                    let statusHtml = '';
+                    if (messageIsFromCurrentUser) {
+                        // Le statut initial pour un nouveau message envoyé est "Envoyé" (une seule coche)
+                        statusHtml = `<span class="message-status" id="status-${data.id}"><i class="bi bi-check2" title="Envoyé"></i></span>`;
+                    }
+
+                    messageElement.innerHTML = `
+                        <div class="message-body">${data.body}</div>
+                        <div class="message-meta">
+                            <span class="timestamp">${new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            ${statusHtml}
+                        </div>
+                    `;
+
+                    messagesContainer.appendChild(messageElement);
+                    // Faire défiler vers le bas pour voir le nouveau message
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            });
+
+            // 3. Écouter les mises à jour de statut "vu"
+            socket.on('messages_read', function(data) {
+                // data.message_ids est un tableau d'IDs de messages qui viennent d'être lus
+                data.message_ids.forEach(messageId => {
+                    const statusElement = document.getElementById(`status-${messageId}`);
+                    if (statusElement) {
+                        // Mettre à jour l'icône pour "Vu" (double coche)
+                        statusElement.innerHTML = '<i class="bi bi-check2-all" title="Vu"></i>';
+                    }
+                });
+            });
+        });
+    </script>
+    {% endif %}
+    <script src="{{ url_for('static', filename='js/inbox.js') }}"></script>
+</body>
+</html>

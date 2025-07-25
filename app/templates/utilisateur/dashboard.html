@@ -25,6 +25,14 @@
                     </span>
                 {% endif %}
             </a>
+            <a href="{{ url_for('main.inbox') }}" class="btn btn-outline-light me-3 position-relative">
+                <i class="bi bi-chat-dots"></i>
+                {% if unread_messages_count > 0 %}
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ unread_messages_count }}
+                    </span>
+                {% endif %}
+            </a>
             <span>Bonjour, <strong>{{ current_user.prenom }}</strong></span>
             <a href="{{ url_for('main.profile') }}" class="btn-edit-profile">
                 <i class="bi bi-pencil-square"></i> Mon Profil

@@ -3,7 +3,10 @@ from app import db # Importe l'objet db de votre __init__.py
 from datetime import datetime # Pour les champs de date/heure
 from werkzeug.security import generate_password_hash, check_password_hash # Pour le hachage des mots de passe
 from flask_login import UserMixin # Pour faciliter l'intégration avec Flask-Login
+from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
+from flask import current_app
 from enum import Enum 
+from sqlalchemy import or_
 # Modèle pour les Filières (ex: Informatique, Génie Civil, Droit)
 class RoleEnum(Enum):
     ETUDIANT = "etudiant"
@@ -13,10 +16,11 @@ class Filiere(db.Model):
     __tablename__ = 'filieres' # Nom de la table dans la BDD, correspond au SQL
     id = db.Column(db.Integer, primary_key=True)
     nom_filiere = db.Column(db.String(100), unique=True, nullable=False)
+    description = db.Column(db.Text, nullable=True)
 
     # Relations inverses:
-    # Un utilisateur peut appartenir à une filière
-    utilisateurs = db.relationship('Utilisateur', backref='filiere_obj', lazy='dynamic')
+    # Un groupe appartient à une filière
+    groupes = db.relationship('Groupe', backref='filiere_obj', lazy='dynamic')
     # Une affectation de cours peut concerner une filière
     cours_affectations = db.relationship('CoursAffectation', backref='filiere_obj', lazy='dynamic')
 
@@ -32,8 +36,6 @@ class Niveau(db.Model):
     # Relations inverses:
     # Un groupe appartient à un niveau
     groupes = db.relationship('Groupe', backref='niveau_obj', lazy='dynamic')
-    # Un utilisateur (étudiant) peut avoir un niveau
-    utilisateurs = db.relationship('Utilisateur', backref='niveau_obj', lazy='dynamic')
     # Une affectation de cours peut concerner un niveau
     cours_affectations = db.relationship('CoursAffectation', backref='niveau_obj', lazy='dynamic')
 
@@ -74,10 +76,13 @@ class Utilisateur(db.Model, UserMixin):
     role = db.Column(db.Enum('etudiant', 'enseignant', 'administrateur'), default='etudiant', nullable=False)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Clés étrangères, nullable pour les enseignants/admins
+    # Clé étrangère, nullable pour les enseignants/admins. Un étudiant est lié à un groupe.
+    groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=True)
+    # NOUVEAUX CHAMPS pour lier directement un étudiant à une filière/niveau.
+    # C'est utile pour les requêtes et la logique du tableau de bord.
+    # Nullable pour les non-étudiants.
     filiere_id = db.Column(db.Integer, db.ForeignKey('filieres.id'), nullable=True)
     niveau_id = db.Column(db.Integer, db.ForeignKey('niveaux.id'), nullable=True)
-    groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=True)
 
     # Relations directes pour les cours enseignés et les notifications reçues
     enseigne_cours = db.relationship('Cours', backref='enseignant_obj', foreign_keys='Cours.enseignant_id', lazy='dynamic')
@@ -86,6 +91,23 @@ class Utilisateur(db.Model, UserMixin):
     disponibilites = db.relationship('DisponibiliteEnseignant', backref='enseignant_obj', lazy='dynamic', cascade="all, delete-orphan")
 
     # Méthodes pour le hachage et la vérification des mots de passe
+    sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='author', lazy='dynamic')
+
+    def new_messages_count(self):
+        """Compte les messages non lus où l'utilisateur est participant mais pas l'expéditeur."""
+        conversations = Conversation.query.filter(
+            or_(
+                Conversation.participant1_id == self.id,
+                Conversation.participant2_id == self.id
+            )
+        ).all()
+        if not conversations:
+            return 0
+        conversation_ids = [c.id for c in conversations]
+        
+        count = Message.query.filter(Message.conversation_id.in_(conversation_ids), Message.sender_id != self.id, Message.is_read == False).count()
+        return count
+
     def set_password(self, password):
         self.mot_de_passe_hash = generate_password_hash(password)
 
@@ -96,9 +118,80 @@ class Utilisateur(db.Model, UserMixin):
     def get_id(self):
         return str(self.id)
 
+    def get_reset_token(self):
+        """Génère un token de réinitialisation de mot de passe."""
+        s = Serializer(current_app.config['SECRET_KEY'])
+        # Le token sera valide pour la durée spécifiée dans verify_reset_token (30 min par défaut)
+        return s.dumps({'user_id': self.id})
+
+    @staticmethod
+    def verify_reset_token(token, expires_sec=1800):
+        """Vérifie le token de réinitialisation."""
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token, max_age=expires_sec)['user_id']
+        except Exception: # Un token invalide ou expiré lèvera une exception
+            # Le token est invalide ou a expiré
+            return None
+        return Utilisateur.query.get(user_id)
+
     def __repr__(self):
         return f'<Utilisateur {self.prenom} {self.nom} ({self.role})>'
 
+
+# ===================================================================
+# ==                  MODÈLES POUR LA MESSAGERIE                   ==
+# ===================================================================
+
+class Conversation(db.Model):
+    __tablename__ = 'conversations'
+    id = db.Column(db.Integer, primary_key=True)
+    participant1_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
+    participant2_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
+    last_message_time = db.Column(db.DateTime, default=datetime.utcnow, index=True)
+
+    participant1 = db.relationship('Utilisateur', foreign_keys=[participant1_id], backref=db.backref('conversations_as_p1', lazy='dynamic'))
+    participant2 = db.relationship('Utilisateur', foreign_keys=[participant2_id], backref=db.backref('conversations_as_p2', lazy='dynamic'))
+
+    messages = db.relationship('Message', backref='conversation', lazy='dynamic', cascade="all, delete-orphan")
+
+    # Pour empêcher les doublons de conversation (1,2) et (2,1)
+    __table_args__ = (db.UniqueConstraint('participant1_id', 'participant2_id', name='_conversation_participants_uc'),)
+
+    def unread_messages_for(self, user):
+        """Compte les messages non lus pour un utilisateur spécifique dans cette conversation."""
+        if user.id not in [self.participant1_id, self.participant2_id]:
+            return 0
+        # Compte les messages dans cette conversation où l'expéditeur n'est pas l'utilisateur actuel et qui ne sont pas lus.
+        return self.messages.filter(Message.sender_id != user.id, Message.is_read == False).count()
+
+    def get_other_participant(self, user):
+        if user.id == self.participant1_id:
+            return self.participant2
+        elif user.id == self.participant2_id:
+            return self.participant1
+        return None
+
+    def last_message(self):
+        return self.messages.order_by(Message.timestamp.desc()).first()
+
+class Message(db.Model):
+    __tablename__ = 'messages'
+    id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, db.ForeignKey('conversations.id'), nullable=False)
+    sender_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
+    body = db.Column(db.Text, nullable=True) # Le corps du message peut être vide si une image est envoyée
+    image_url = db.Column(db.String(255), nullable=True) # Pour stocker l'URL de l'image
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False, nullable=False)
+
+    # S'assurer qu'un message a soit du texte, soit une image pour ne pas être vide
+    __table_args__ = (
+        db.CheckConstraint('body IS NOT NULL OR image_url IS NOT NULL', name='_message_content_check'),
+    )
+
+    def __repr__(self):
+        return f'<Message {self.id}>'
 
 # Modèle pour les Salles de Cours (ex: Amphi A, Salle B101)
 class Salle(db.Model):

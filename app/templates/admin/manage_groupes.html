@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Groupes - UniPlanBJ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+    <header class="dashboard-header d-flex justify-content-between align-items-center">
+        <h1>Gestion des Groupes</h1>
+        <div>
+            <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline-light">
+                <i class="bi bi-arrow-left-circle"></i> Retour au tableau de bord
+            </a>
+        </div>
+    </header>
+
+    <main class="main-content container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <button class="btn btn-primary mb-4" data-bs-toggle="modal" data-bs-target="#addGroupeModal">
+            <i class="bi bi-plus-circle"></i> Ajouter un Groupe
+        </button>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nom du Groupe</th>
+                        <th>Filière</th>
+                        <th>Niveau</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for groupe in groupes %}
+                    <tr>
+                        <td><strong>{{ groupe.nom_groupe }}</strong></td>
+                        <td>{{ groupe.filiere_obj.nom_filiere }}</td>
+                        <td>{{ groupe.niveau_obj.nom_niveau }}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editGroupeModal{{ groupe.id }}">
+                                <i class="bi bi-pencil"></i> Modifier
+                            </button>
+                            <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteGroupeModal{{ groupe.id }}">
+                                <i class="bi bi-trash"></i> Supprimer
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Modal de Modification -->
+                    <div class="modal fade" id="editGroupeModal{{ groupe.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('main.edit_groupe', groupe_id=groupe.id) }}" class="text-dark">
+                                    <div class="modal-header"><h5 class="modal-title">Modifier le Groupe</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                    <div class="modal-body text-start">
+                                        <div class="mb-3"><label class="form-label">Nom</label><input type="text" class="form-control" name="nom_groupe" value="{{ groupe.nom_groupe }}" required></div>
+                                        <div class="mb-3"><label class="form-label">Filière</label>
+                                            <select name="filiere_id" class="form-select" required>
+                                                {% for filiere in filieres %}<option value="{{ filiere.id }}" {% if filiere.id == groupe.filiere_id %}selected{% endif %}>{{ filiere.nom_filiere }}</option>{% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-3"><label class="form-label">Niveau</label>
+                                            <select name="niveau_id" class="form-select" required>
+                                                {% for niveau in niveaux %}<option value="{{ niveau.id }}" {% if niveau.id == groupe.niveau_id %}selected{% endif %}>{{ niveau.nom_niveau }}</option>{% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-primary">Enregistrer</button></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal de Suppression -->
+                    <div class="modal fade" id="deleteGroupeModal{{ groupe.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST" action="{{ url_for('main.delete_groupe', groupe_id=groupe.id) }}" class="text-dark">
+                                    <div class="modal-header"><h5 class="modal-title">Confirmer la Suppression</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                                    <div class="modal-body text-start">
+                                        <p>Êtes-vous sûr de vouloir supprimer le groupe <strong>{{ groupe.nom_groupe }} ({{ groupe.filiere_obj.nom_filiere }} - {{ groupe.niveau_obj.nom_niveau }})</strong> ?</p>
+                                        <p class="text-danger">Cette action est irréversible. La suppression échouera si le groupe est déjà associé à des étudiants.</p>
+                                    </div>
+                                    <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-danger">Supprimer</button></div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <tr><td colspan="4" class="text-center">Aucun groupe trouvé.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+
+<!-- Modal d'Ajout -->
+<div class="modal fade" id="addGroupeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('main.manage_groupes') }}" class="text-dark">
+                <div class="modal-header"><h5 class="modal-title">Ajouter un nouveau Groupe</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body text-start">
+                    <div class="mb-3">
+                        <label class="form-label">Nom du Groupe</label>
+                        <input type="text" class="form-control" name="nom_groupe" required placeholder="Ex: Groupe A, TD 1, TP Info...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Filière</label>
+                        <select name="filiere_id" class="form-select" required>
+                            <option value="" disabled selected>-- Choisir une filière --</option>
+                            {% for filiere in filieres %}
+                            <option value="{{ filiere.id }}">{{ filiere.nom_filiere }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Niveau</label>
+                        <select name="niveau_id" class="form-select" required>
+                            <option value="" disabled selected>-- Choisir un niveau --</option>
+                            {% for niveau in niveaux %}
+                            <option value="{{ niveau.id }}">{{ niveau.nom_niveau }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button><button type="submit" class="btn btn-primary">Ajouter</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
