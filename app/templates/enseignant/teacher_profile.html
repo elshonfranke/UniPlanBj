@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier le Profil - UniPlan</title>
+    <!-- Bootstrap pour le système de grille -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Votre feuille de style personnalisée -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher_profile.css') }}">
+    <style>
+        /* Styles additionnels pour la gestion dynamique des matières */
+        .subject-entry {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 3px solid #fcb045;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .subject-entry.is-invalid {
+            border-left-color: #dc3545; /* Couleur de danger de Bootstrap */
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        }
+        .duplicate-error {
+            font-size: 0.875em;
+            font-weight: 600;
+        }
+
+        .btn-remove-subject {
+            background-color: #fd1d1d;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 32px; /* Aligner avec les champs de saisie */
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .btn-remove-subject:hover {
+            background-color: #c41a1a;
+            transform: scale(1.1);
+        }
+
+        .btn-add-subject {
+            background: transparent;
+            border: 2px solid #fff;
+            color: #fff;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-add-subject:hover {
+            background: #fff;
+            color: #833ab4;
+        }
+
+        /* Style pour le bouton de retour */
+        .btn-back {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        .btn-back:hover {
+            color: #fff;
+        }
+        .btn-back i {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Modifier le Profil Enseignant</h1>
+        
+        <!-- Le formulaire enverra les données à la route 'main.update_teacher_profile' -->
+        <form action="{{ url_for('main.update_teacher_profile') }}" method="POST">
+            
+            <!-- Section pour les informations de base -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="firstname">Prénom</label>
+                        <input type="text" id="firstname" name="firstname" class="form-control" value="{{ current_user.prenom }}" placeholder="Votre prénom">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="lastname">Nom</label>
+                        <input type="text" id="lastname" name="lastname" class="form-control" value="{{ current_user.nom }}" placeholder="Votre nom">
+                    </div>
+                </div>
+            </div>
+
+            <hr style="margin: 25px 0; border-color: rgba(255,255,255,0.3);">
+
+            <!-- Section pour la gestion des matières -->
+            <div class="form-group">
+                <label>Matières Enseignées</label>
+                <div id="subjects-container">
+                    <!-- Les matières existantes de l'enseignant sont chargées ici par le serveur -->
+                    {% for enseignement in enseignements_actuels %}
+                    <div class="subject-entry">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label">Matière</label>
+                                <select name="subject_id" class="form-select" required>
+                                    {% for matiere in matieres %}
+                                    <option value="{{ matiere.id }}" {% if matiere.id == enseignement.matiere_id %}selected{% endif %}>{{ matiere.nom_matiere }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Filière</label>
+                                <select name="filiere_id" class="form-select" required>
+                                    {% for filiere in filieres %}
+                                    <option value="{{ filiere.id }}" {% if filiere.id == enseignement.filiere_id %}selected{% endif %}>{{ filiere.nom_filiere }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Niveau</label>
+                                <select name="level_id" class="form-select" required>
+                                    {% for niveau in niveaux %}
+                                    <option value="{{ niveau.id }}" {% if niveau.id == enseignement.niveau_id %}selected{% endif %}>{{ niveau.nom_niveau }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 text-center">
+                                <button type="button" class="btn-remove-subject" onclick="removeSubject(this)"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                </div>
+                
+                <!-- Bouton pour ajouter une nouvelle association matière/filière/niveau -->
+                <button type="button" id="add-subject-btn" class="btn btn-add-subject mt-3">
+                    <i class="fas fa-plus"></i> Ajouter une matière
+                </button>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <a href="{{ url_for('main.dashboard') }}" class="btn-back">
+                    <i class="fas fa-arrow-left"></i> Retour au tableau de bord
+                </a>
+                <button type="submit" class="btn">Enregistrer les modifications</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Template pour une nouvelle entrée de matière (caché) -->
+    <div id="subject-template" style="display: none;">
+        <div class="subject-entry">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="form-label">Matière</label>
+                        <select name="subject_id" class="form-select" required>
+                            <option value="" disabled selected>Choisir...</option>
+                            {% for matiere in matieres %}
+                            <option value="{{ matiere.id }}">{{ matiere.nom_matiere }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Filière</label>
+                        <select name="filiere_id" class="form-select" required>
+                            <option value="" disabled selected>Choisir...</option>
+                            {% for filiere in filieres %}
+                            <option value="{{ filiere.id }}">{{ filiere.nom_filiere }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label class="form-label">Niveau</label>
+                        <select name="level_id" class="form-select" required>
+                            <option value="" disabled selected>Choisir...</option>
+                            {% for niveau in niveaux %}
+                            <option value="{{ niveau.id }}">{{ niveau.nom_niveau }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-2 text-center">
+                    <button type="button" class="btn-remove-subject" onclick="removeSubject(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    /**
+     * Vérifie les combinaisons en double de matière/filière/niveau sur la page.
+     * Fournit un retour visuel en surlignant les lignes en double.
+     * @returns {boolean} - Renvoie true si le formulaire est valide (pas de doublons), sinon false.
+     */
+    function validateCombinations() {
+        const combinationMap = new Map();
+        let hasDuplicates = false;
+
+        // 1. Réinitialiser les états d'erreur précédents de toutes les lignes
+        document.querySelectorAll('.subject-entry').forEach(row => {
+            row.classList.remove('is-invalid');
+            const errorDiv = row.querySelector('.duplicate-error');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        });
+
+        // 2. Parcourir chaque ligne pour trouver les doublons
+        document.querySelectorAll('#subjects-container .subject-entry').forEach(row => {
+            const subjectId = row.querySelector('select[name="subject_id"]').value;
+            const filiereId = row.querySelector('select[name="filiere_id"]').value;
+            const levelId = row.querySelector('select[name="level_id"]').value;
+
+            // Ne valider que les lignes entièrement remplies
+            if (subjectId && filiereId && levelId) {
+                const key = `${subjectId}-${filiereId}-${levelId}`;
+                
+                if (combinationMap.has(key)) {
+                    hasDuplicates = true;
+                    const originalRow = combinationMap.get(key);
+
+                    // Marquer les deux lignes comme invalides
+                    originalRow.classList.add('is-invalid');
+                    row.classList.add('is-invalid');
+
+                    // Ajouter un message d'erreur à la ligne originale si elle n'en a pas
+                    if (!originalRow.querySelector('.duplicate-error')) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'duplicate-error text-danger mt-2 text-center fw-bold';
+                        errorDiv.innerText = 'Cette combinaison est un doublon.';
+                        originalRow.appendChild(errorDiv);
+                    }
+                    // Ajouter un message d'erreur à la ligne dupliquée actuelle
+                    if (!row.querySelector('.duplicate-error')) {
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'duplicate-error text-danger mt-2 text-center fw-bold';
+                        errorDiv.innerText = 'Cette combinaison est un doublon.';
+                        row.appendChild(errorDiv);
+                    }
+                } else {
+                    combinationMap.set(key, row);
+                }
+            }
+        });
+
+        return !hasDuplicates;
+    }
+
+    document.getElementById('add-subject-btn').addEventListener('click', function() {
+        // Vérifier s'il y a déjà une ligne vide (non sélectionnée)
+        let hasEmptyRow = false;
+        document.querySelectorAll('#subjects-container .subject-entry select[name="subject_id"]').forEach(select => {
+            if (!select.value) {
+                hasEmptyRow = true;
+                const row = select.closest('.subject-entry');
+                // Animer la ligne pour attirer l'attention
+                row.style.transition = 'transform 0.2s ease';
+                row.style.transform = 'scale(1.02)';
+                setTimeout(() => { row.style.transform = 'scale(1)'; }, 200);
+            }
+        });
+
+        if (hasEmptyRow) {
+            alert("Veuillez d'abord compléter la ligne existante avant d'en ajouter une nouvelle.");
+            return;
+        }
+
+        // Cloner le template
+        const template = document.getElementById('subject-template').firstElementChild.cloneNode(true);
+        
+        // Ajouter le nouvel élément au conteneur
+        const container = document.getElementById('subjects-container');
+        container.appendChild(template);
+
+        // Ajouter des écouteurs d'événements aux nouveaux champs pour la validation en temps réel
+        template.querySelectorAll('select').forEach(select => {
+            select.addEventListener('change', validateCombinations);
+        });
+    });
+
+    function removeSubject(button) {
+        button.closest('.subject-entry').remove();
+        // Revalider après la suppression, car cela pourrait résoudre un problème de doublon
+        validateCombinations();
+    }
+
+    // Ajouter des écouteurs d'événements aux champs existants lors du chargement de la page
+    document.querySelectorAll('#subjects-container .subject-entry select').forEach(select => {
+        select.addEventListener('change', validateCombinations);
+    });
+
+    // Validation finale lors de la soumission du formulaire
+    document.querySelector('form').addEventListener('submit', function(event) {
+        if (!validateCombinations()) {
+            event.preventDefault(); // Arrêter la soumission du formulaire
+            alert("Le formulaire contient des combinaisons de matières en double. Veuillez les corriger.");
+        }
+    });
+</script>
+</body>
+</html>

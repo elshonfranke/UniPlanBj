@@ -1,148 +1,59 @@
+/* app/static/css/profile.css */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 
-/* Re-using the gradient animation from edit_profile.css */
+/* Animation pour le dégradé de fond, pour une cohérence avec les autres pages */
 @keyframes gradient-animation {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
-* {
-  font-family: 'Montserrat', sans-serif;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  overflow: hidden;
-  background: linear-gradient(120deg, #833ab4, #fd1d1d, #fcb045);
-  background-size: 400% 400%;
-  animation: gradient-animation 18s ease infinite;
-  padding: 2rem;
-}
-
-.profile-container {
-  width: 100%;
-  max-width: 500px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
-  color: #fff;
-  border-radius: 15px;
-  padding: 40px;
-  text-align: center;
-  animation: fadeIn 1s ease-out;
-}
-
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: scale(0.95) translateY(20px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translateY(0);
   }
 }
 
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.5);
-    margin: 0 auto 20px auto;
+:root {
+    /* --- Theme Variables --- */
+    --avatar-size: 140px;
+    --brand-gradient: linear-gradient(90deg, #fd1d1d, #fcb045);
+    --brand-orange: #fcb045;
+    --glass-bg: rgba(255, 255, 255, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-color: #fff;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 4rem;
-    font-weight: 700;
+    min-height: 100vh;
+    padding: 2rem 0;
+    background: linear-gradient(120deg, #833ab4, #fd1d1d, #fcb045);
+    background-size: 400% 400%;
+    animation: gradient-animation 18s ease infinite;
+    color: var(--text-color);
 }
 
-.profile-name {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 5px;
+.profile-card {
+    width: 90%;
+    max-width: 600px;
+    /* --- Glassmorphism Effect --- */
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
-.profile-email {
-    font-size: 1rem;
-    color: rgba(255, 255, 255, 0.8);
-    margin-bottom: 25px;
-    word-break: break-all;
-}
-
-.profile-details {
-    text-align: left;
-    margin-top: 30px;
-}
-
-.detail-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 15px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.detail-item:last-child {
-    border-bottom: none;
-}
-
-.detail-item .label {
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.detail-item .value {
-    font-weight: 400;
-    text-transform: capitalize;
-}
-
-.btn-edit {
-  width: 100%;
-  height: 45px;
-  background: linear-gradient(90deg, #fd1d1d, #fcb045);
-  border: none;
-  outline: none;
-  border-radius: 8px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-top: 30px;
-  display: inline-block;
-  line-height: 45px;
-  text-decoration: none;
-}
-
-.btn-edit:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(252, 176, 69, 0.4);
-}
-
-.dashboard-link {
-  font-size: 14.5px;
-  text-align: center;
-  margin-top: 20px;
-}
-
-.dashboard-link a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.dashboard-link a:hover {
-  text-decoration: underline;
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }

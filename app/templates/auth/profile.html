@@ -4,41 +4,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Profil - UniPlanBJ</title>
+    <!-- Ajout de Bootstrap pour une mise en page cohérente et responsive -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    <style>
+        :root {
+            --primary-color: #0d6efd; /* Bootstrap primary */
+            --light-gray: #f8f9fa;
+            --gray: #6c757d;
+            --dark-gray: #343a40;
+            --card-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+            --avatar-size: 140px;
+        }
+
+        body {
+            background-color: var(--light-gray);
+            font-family: 'Montserrat', sans-serif;
+            padding: 2rem 0;
+        }
+
+        .profile-card {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+
+        .profile-avatar {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-avatar img, .initial-avatar {
+            width: var(--avatar-size);
+            height: var(--avatar-size);
+            border-radius: 50%;
+            object-fit: cover;
+            border: 6px solid #fff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-avatar:hover img, .profile-avatar:hover .initial-avatar {
+            transform: scale(1.05);
+        }
+
+        .initial-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3.2rem;
+            font-weight: 600;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            font-size: 1.75rem;
+            color: var(--dark-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-email {
+            color: var(--gray);
+            margin-bottom: 2rem;
+        }
+
+        .picture-management {
+            background-color: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .list-group-item {
+            background-color: transparent;
+            border-color: #e9ecef;
+        }
+
+        .list-group-item .label {
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        .action-buttons .btn {
+            font-weight: 500;
+        }
+
+        .back-link a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .back-link a:hover {
+            color: var(--dark-gray);
+        }
+    </style>
 </head>
 <body>
-    <div class="profile-container">
-        <div class="profile-avatar">
-            {{ current_user.prenom[0] | upper }}{{ current_user.nom[0] | upper }}
-        </div>
-        <h1 class="profile-name">{{ current_user.prenom }} {{ current_user.nom }}</h1>
-        <p class="profile-email">{{ current_user.email }}</p>
+    <div class="container">
+        <div class="profile-card">
+            <!-- Bloc pour les messages flash (notifications) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category in ['error', 'danger'] else 'success' }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
 
-        <div class="profile-details">
-            <div class="detail-item">
-                <span class="label">Rôle</span>
-                <span class="value">{{ current_user.role }}</span>
+            <!-- Avatar et informations de base -->
+            <div class="profile-avatar">
+                {% if current_user.picture == 'default.jpg' %}
+                    <div class="initial-avatar" style="background-color: {{ current_user.get_avatar_color() }};">
+                        <span>{{ current_user.initial }}</span>
+                    </div>
+                {% else %}
+                    <img src="{{ url_for('static', filename='profile_pics/' + current_user.picture) }}" alt="Photo de profil">
+                {% endif %}
             </div>
-            {% if current_user.role == 'etudiant' %}
-                <div class="detail-item">
-                    <span class="label">Filière</span>
-                    <span class="value">{{ current_user.filiere_obj.nom_filiere if current_user.filiere_obj else 'Non spécifiée' }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="label">Niveau</span>
-                    <span class="value">{{ current_user.niveau_obj.nom_niveau if current_user.niveau_obj else 'Non spécifié' }}</span>
-                </div>
-            {% endif %}
-        </div>
+            <h1 class="profile-name h3">{{ current_user.prenom }} {{ current_user.nom }}</h1>
+            <p class="profile-email">{{ current_user.email }}</p>
 
-        {% if current_user.role == 'etudiant' %}
-        <a href="{{ url_for('main.edit_profile') }}" class="btn-edit">Modifier mes informations</a>
-        {% endif %}
-        <a href="{{ url_for('main.change_password') }}" class="btn-edit">Changer le mot de passe</a>
+            <!-- Section de gestion de la photo de profil -->
+            <div class="picture-management">
+                <form class="update-form" method="POST" action="{{ url_for('main.profile') }}" enctype="multipart/form-data">
+                    <label for="pictureUpload" class="form-label">Changer votre photo de profil</label>
+                    <div class="input-group">
+                        <input type="file" name="picture" class="form-control" id="pictureUpload" accept="image/png, image/jpeg, image/gif">
+                        <button type="submit" class="btn btn-outline-primary">Mettre à jour</button>
+                    </div>
+                </form>
+                {% if current_user.picture != 'default.jpg' %}
+                <div class="text-center mt-2">
+                    <form action="{{ url_for('main.delete_profile_picture') }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre photo de profil ?');" style="display: inline;">
+                        <button type="submit" class="btn btn-link text-danger btn-sm p-0"><i class="bi bi-trash"></i> Supprimer la photo actuelle</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
 
-        <div class="dashboard-link">
-            <p><a href="{{ url_for('main.dashboard') }}">Retour au tableau de bord</a></p>
+            <!-- Détails du profil (restructuré avec Bootstrap pour éviter les superpositions) -->
+            <div class="profile-details list-group list-group-flush text-start mb-4">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span class="label">Rôle</span>
+                    <span class="badge bg-info rounded-pill">{{ current_user.role|capitalize }}</span>
+                </div>
+                {% if current_user.role == 'etudiant' %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="label">Filière</span>
+                        <span class="value text-end">{{ current_user.filiere_obj.nom_filiere if current_user.filiere_obj else 'Non spécifiée' }}</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="label">Niveau</span>
+                        <span class="value text-end">{{ current_user.niveau_obj.nom_niveau if current_user.niveau_obj else 'Non spécifié' }}</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Boutons d'action (stylisés avec Bootstrap) -->
+            <div class="action-buttons mt-4 d-grid gap-2 d-sm-flex justify-content-sm-center">
+                {% if current_user.role == 'etudiant' %}
+                <a href="{{ url_for('main.edit_profile') }}" class="btn btn-primary"><i class="bi bi-pencil-square"></i> Modifier mes informations</a>
+                {% endif %}
+                <a href="{{ url_for('main.change_password') }}" class="btn btn-secondary"><i class="bi bi-key-fill"></i> Changer le mot de passe</a>
+            </div>
+
+            <div class="mt-4 back-link">
+                <a href="{{ url_for('main.dashboard') }}"><i class="bi bi-arrow-left-circle"></i> Retourner au tableau de bord</a>
+            </div>
         </div>
     </div>
+    <!-- Ajout du JS de Bootstrap pour les fonctionnalités comme les alertes dismissibles -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

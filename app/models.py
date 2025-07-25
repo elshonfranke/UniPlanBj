@@ -75,6 +75,7 @@ class Utilisateur(db.Model, UserMixin):
     # Utilisation de db.Enum pour le type ENUM de MySQL
     role = db.Column(db.Enum('etudiant', 'enseignant', 'administrateur'), default='etudiant', nullable=False)
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
+    picture = db.Column(db.String(20), nullable=False, default='default.jpg')
     
     # Clé étrangère, nullable pour les enseignants/admins. Un étudiant est lié à un groupe.
     groupe_id = db.Column(db.Integer, db.ForeignKey('groupes.id'), nullable=True)
@@ -84,6 +85,11 @@ class Utilisateur(db.Model, UserMixin):
     filiere_id = db.Column(db.Integer, db.ForeignKey('filieres.id'), nullable=True)
     niveau_id = db.Column(db.Integer, db.ForeignKey('niveaux.id'), nullable=True)
 
+    # Relations pour accéder directement à l'objet Filiere et Niveau depuis un Utilisateur.
+    # C'est ce qui permet à `current_user.filiere_obj` et `current_user.niveau_obj` de fonctionner.
+    filiere_obj = db.relationship('Filiere', foreign_keys=[filiere_id], backref=db.backref('etudiants', lazy='dynamic'))
+    niveau_obj = db.relationship('Niveau', foreign_keys=[niveau_id], backref=db.backref('etudiants', lazy='dynamic'))
+
     # Relations directes pour les cours enseignés et les notifications reçues
     enseigne_cours = db.relationship('Cours', backref='enseignant_obj', foreign_keys='Cours.enseignant_id', lazy='dynamic')
     notifications_recues = db.relationship('Notification', backref='destinataire_obj', foreign_keys='Notification.destinataire_id', lazy='dynamic')
@@ -92,6 +98,32 @@ class Utilisateur(db.Model, UserMixin):
 
     # Méthodes pour le hachage et la vérification des mots de passe
     sent_messages = db.relationship('Message', foreign_keys='Message.sender_id', backref='author', lazy='dynamic')
+
+    @property
+    def initial(self):
+        """Retourne les initiales du prénom et du nom de l'utilisateur."""
+        initials = ""
+        if self.prenom:
+            initials += self.prenom[0].upper()
+        if self.nom:
+            initials += self.nom[0].upper()
+        return initials if initials else '?'
+
+    def get_avatar_color(self):
+        """
+        Génère une couleur de fond pour l'avatar en fonction du nom.
+        Cela garantit que chaque utilisateur aura toujours la même couleur.
+        """
+        # Liste de couleurs de fond agréables et lisibles avec du texte blanc
+        colors = [
+            '#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#34495e',
+            '#f1c40f', '#e67e22', '#e74c3c', '#7f8c8d', '#2c3e50'
+        ]
+        # Utilise un simple hash sur le nom pour choisir une couleur de manière déterministe
+        if not self.nom:
+            return colors[0]
+        hash_code = sum(ord(char) for char in self.nom)
+        return colors[hash_code % len(colors)]
 
     def new_messages_count(self):
         """Compte les messages non lus où l'utilisateur est participant mais pas l'expéditeur."""
@@ -274,6 +306,27 @@ class Notification(db.Model):
     def __repr__(self):
         return f'<Notification "{self.titre[:20]}..." pour {self.destinataire_role}>'
 
+# Modèle pour la table de liaison Enseigne
+# Indique quelle matière un enseignant enseigne, pour quelle filière et quel niveau.
+class Enseigne(db.Model):
+    __tablename__ = 'enseigne'
+    id = db.Column(db.Integer, primary_key=True)
+    enseignant_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
+    matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'), nullable=False)
+    filiere_id = db.Column(db.Integer, db.ForeignKey('filieres.id'), nullable=False)
+    niveau_id = db.Column(db.Integer, db.ForeignKey('niveaux.id'), nullable=False)
+
+    # Contrainte d'unicité pour éviter les doublons
+    __table_args__ = (db.UniqueConstraint('enseignant_id', 'matiere_id', 'filiere_id', 'niveau_id', name='_enseignant_matiere_filiere_niveau_uc'),)
+
+    # Relations pour un accès facile depuis l'objet Enseigne
+    enseignant = db.relationship('Utilisateur', backref=db.backref('enseignements', lazy='dynamic', cascade="all, delete-orphan"))
+    matiere = db.relationship('Matiere', backref=db.backref('enseignements', lazy='dynamic'))
+    filiere = db.relationship('Filiere', backref=db.backref('enseignements', lazy='dynamic'))
+    niveau = db.relationship('Niveau', backref=db.backref('enseignements', lazy='dynamic'))
+
+    def __repr__(self):
+        return f'<Enseigne {self.enseignant.nom} -> {self.matiere.nom_matiere}>'
 # Modèle pour les disponibilités des enseignants
 class DisponibiliteEnseignant(db.Model):
     __tablename__ = 'disponibilites_enseignants'

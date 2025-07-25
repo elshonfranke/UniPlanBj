@@ -3,13 +3,15 @@ from flask_login import login_required, current_user, login_user, logout_user
 from app import db, mail, socketio
 from app import login_manager
 from flask_mail import Message
-from app.models import Utilisateur, Filiere, Niveau, Groupe, Cours, CoursAffectation, Notification, DisponibiliteEnseignant, Matiere, Salle, Conversation, Message
+from app.models import Utilisateur, Filiere, Niveau, Groupe, Cours, CoursAffectation, Notification, DisponibiliteEnseignant, Matiere, Salle, Conversation, Message, Enseigne
 from datetime import datetime, timedelta
 from .decorators import role_required
 from sqlalchemy import or_, and_, func # Importation des fonctions pour les requêtes complexes
 from sqlalchemy.exc import IntegrityError # Pour gérer les erreurs de contrainte unique
 from flask_socketio import emit, join_room, leave_room
 import os
+import secrets
+from PIL import Image
 import uuid
 from werkzeug.utils import secure_filename
 
@@ -30,6 +32,28 @@ def inject_global_vars():
         unread_messages = current_user.new_messages_count()
         return dict(unread_count=unread_notifications, unread_messages_count=unread_messages)
     return dict(unread_count=0, unread_messages_count=0)
+
+def save_profile_picture(form_picture):
+    """
+    Sauvegarde et redimensionne la photo de profil de l'utilisateur.
+    Génère un nom de fichier aléatoire pour éviter les conflits.
+    """
+    random_hex = secrets.token_hex(8)
+    # Garder l'extension du fichier original
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
+
+    # S'assurer que le dossier de destination existe
+    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
+
+    # Redimensionner l'image pour économiser de l'espace et standardiser
+    output_size = (150, 150)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -271,10 +295,55 @@ def reset_token(token):
         
     return render_template('auth/reset_token.html', token=token)
 
-@main_bp.route('/profile')
+@main_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
+    if request.method == 'POST':
+        if 'picture' in request.files:
+            file = request.files['picture']
+            if file.filename == '':
+                flash('Aucun fichier sélectionné.', 'warning')
+                return redirect(request.url)
+            
+            if file and allowed_file(file.filename):
+                # Supprimer l'ancienne photo si ce n'est pas la photo par défaut
+                if current_user.picture != 'default.jpg':
+                    old_picture_path = os.path.join(current_app.root_path, 'static/profile_pics', current_user.picture)
+                    if os.path.exists(old_picture_path):
+                        os.remove(old_picture_path)
+                
+                picture_file = save_profile_picture(file)
+                current_user.picture = picture_file
+                db.session.commit()
+                flash('Votre photo de profil a été mise à jour !', 'success')
+                return redirect(url_for('main.profile'))
+            else:
+                flash('Type de fichier non autorisé. Veuillez choisir une image (jpg, png, gif).', 'danger')
+
     return render_template('auth/profile.html')
+
+@main_bp.route('/profile/delete_picture', methods=['POST'])
+@login_required
+def delete_profile_picture():
+    """Supprime la photo de profil de l'utilisateur et la remplace par celle par défaut."""
+    if current_user.picture != 'default.jpg':
+        # Construire le chemin vers l'ancienne photo
+        picture_path = os.path.join(current_app.root_path, 'static/profile_pics', current_user.picture)
+        
+        # Essayer de supprimer le fichier physique
+        try:
+            if os.path.exists(picture_path):
+                os.remove(picture_path)
+        except OSError as e:
+            # Log l'erreur si la suppression échoue, mais continuer
+            current_app.logger.error(f"Erreur lors de la suppression du fichier image {picture_path}: {e}")
+
+        # Mettre à jour la base de données
+        current_user.picture = 'default.jpg'
+        db.session.commit()
+        flash('Votre photo de profil a été supprimée avec succès.', 'success')
+    
+    return redirect(url_for('main.profile'))
 
 @main_bp.route('/profile/change_password', methods=['GET', 'POST'])
 @login_required
@@ -783,6 +852,63 @@ def delete_disponibilite(dispo_id):
     db.session.commit()
     flash('La disponibilité a été supprimée avec succès.', 'success')
     return redirect(url_for('main.enseignant_dashboard'))
+
+@main_bp.route('/teacher/profile/update', methods=['GET', 'POST'])
+@login_required
+@role_required('enseignant')
+def update_teacher_profile():
+    if request.method == 'POST':
+        # --- 1. Mettre à jour les informations de base de l'utilisateur ---
+        current_user.prenom = request.form.get('firstname')
+        current_user.nom = request.form.get('lastname')
+
+        # --- 2. Synchroniser les matières enseignées ---
+        
+        # Récupérer les listes d'IDs depuis le formulaire dynamique
+        subject_ids = request.form.getlist('subject_id')
+        filiere_ids = request.form.getlist('filiere_id')
+        level_ids = request.form.getlist('level_id')
+
+        # Stratégie "Supprimer et Recréer" : simple et robuste
+        # D'abord, on supprime toutes les anciennes associations pour cet enseignant
+        Enseigne.query.filter_by(enseignant_id=current_user.id).delete()
+
+        # Ensuite, on ajoute les nouvelles associations soumises
+        # On utilise un `set` pour éviter d'ajouter des doublons si l'utilisateur en a soumis
+        new_teachings = set()
+        for sub_id, fil_id, lev_id in zip(subject_ids, filiere_ids, level_ids):
+            # S'assurer que les trois valeurs sont présentes et valides avant de les ajouter
+            if sub_id and fil_id and lev_id:
+                new_teachings.add((int(sub_id), int(fil_id), int(lev_id)))
+
+        for sub_id, fil_id, lev_id in new_teachings:
+            teaching_entry = Enseigne(
+                enseignant_id=current_user.id,
+                matiere_id=sub_id,
+                filiere_id=fil_id,
+                niveau_id=lev_id
+            )
+            db.session.add(teaching_entry)
+        
+        try:
+            db.session.commit()
+            flash('Votre profil a été mis à jour avec succès !', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Une erreur est survenue lors de la mise à jour : {e}', 'error')
+
+        return redirect(url_for('main.update_teacher_profile'))
+
+    # --- Pour une requête GET (quand l'enseignant charge la page) ---
+    # Charger toutes les options pour les listes déroulantes
+    matieres = Matiere.query.order_by(Matiere.nom_matiere).all()
+    filieres = Filiere.query.order_by(Filiere.nom_filiere).all()
+    niveaux = Niveau.query.order_by(Niveau.id).all()
+    
+    # Charger les associations existantes pour l'enseignant connecté
+    enseignements_actuels = Enseigne.query.filter_by(enseignant_id=current_user.id).all()
+
+    return render_template('enseignant/teacher_profile.html', matieres=matieres, filieres=filieres, niveaux=niveaux, enseignements_actuels=enseignements_actuels)
 
 def send_course_notification(course, title, message_body):
     """

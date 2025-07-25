@@ -8,6 +8,28 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
 </head>
+<style>
+    /* Style pour les petits avatars dans l'en-tête */
+    .profile-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    /* Style pour l'avatar basé sur les initiales (petite version) */
+    .initial-avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: bold;
+        flex-shrink: 0; /* Empêche le rétrécissement dans un flex container */
+    }
+</style>
 <body>
     <header class="dashboard-header d-flex justify-content-between align-items-center">
         <h1>Tableau de Bord Enseignant</h1>
@@ -29,7 +51,19 @@
                     </span>
                 {% endif %}
             </a>
+            <a href="{{ url_for('main.profile') }}" class="me-3">
+                {% if current_user.picture == 'default.jpg' %}
+                    <div class="initial-avatar-small" style="background-color: {{ current_user.get_avatar_color() }};">
+                        <span>{{ current_user.initial }}</span>
+                    </div>
+                {% else %}
+                    <img src="{{ url_for('static', filename='profile_pics/' + current_user.picture) }}" alt="Photo de profil" class="profile-avatar-small">
+                {% endif %}
+            </a>
             <span>Bonjour, <strong>{{ current_user.prenom }}</strong></span>
+            <a href="{{ url_for('main.update_teacher_profile') }}" class="btn-edit-profile" title="Modifier mon profil et mes matières">
+                <i class="bi bi-pencil-square"></i> Mon Profil
+            </a>
             <a href="{{ url_for('main.logout') }}" class="btn-logout">
                 <i class="bi bi-box-arrow-right"></i> Déconnexion
             </a>
