@@ -3,12 +3,13 @@ import os
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'un_secret_unique_et_long_ici'
 
-    # Base de données distante fournie par Railway
-    DB_USER = os.environ.get('DB_USER')
-    DB_PASSWORD = os.environ.get('DB_PASSWORD')
-    DB_HOST = os.environ.get('DB_HOST')
-    DB_NAME = os.environ.get('DB_NAME')
-    DB_PORT = os.environ.get('DB_PORT', 3306)  # MySQL par défaut
+    # Configuration de la base de données pour Railway
+    # On utilise les noms de variables standards fournis par Railway (MYSQLHOST, MYSQLUSER, etc.)
+    DB_USER = os.environ.get('MYSQLUSER')
+    DB_PASSWORD = os.environ.get('MYSQLPASSWORD')
+    DB_HOST = os.environ.get('MYSQLHOST')
+    DB_NAME = os.environ.get('MYSQLDATABASE')
+    DB_PORT = os.environ.get('MYSQLPORT', 3306)
 
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
