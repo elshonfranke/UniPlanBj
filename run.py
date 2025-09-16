@@ -1,14 +1,10 @@
-import os
-from app import create_app  # Module où create_app est défini
+# run.py
+from app import create_app  # Change 'app' to the actual module name where create_app is defined
 
 app, socketio = create_app()
 
 if __name__ == '__main__':
-    # Railway fournit le port via la variable d'environnement PORT
-    port = int(os.environ.get('PORT', 5000))
-    
-    # Le mode debug ne doit JAMAIS être activé en production.
-    # Railway utilisera un serveur de production comme Gunicorn pour lancer l'application.
-    # Ce bloc ne sera exécuté que si vous lancez le fichier avec `python run.py` localement.
-    debug_mode = os.environ.get('FLASK_ENV') == 'development'
-    socketio.run(app, host='0.0.0.0', port=port, debug=debug_mode)
+    # Démarre le serveur de développement Flask
+    # debug=True active le mode débogage (rechargement auto, débogueur interactif)
+    # Utile pour le développement, mais JAMAIS en production !
+    socketio.run(app, debug=True, port=5100)
