@@ -13,7 +13,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    ADMIN_PIN = '200716'
+    ADMIN_PIN = os.environ.get('ADMIN_PIN') or '200716' # Utiliser une variable d'environnement en priorité
 
     # Configuration Flask-Mail
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.googlemail.com')
