@@ -2,12 +2,17 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate # Importer Flask-Migrate
 import os
 from flask_socketio import SocketIO
+from dotenv import load_dotenv
+
+load_dotenv() # Charge les variables d'environnement depuis .env AVANT tout le reste
+
 from app.config import Config # Importe votre classe de configuration
 
 # Initialisation des extensions
-db = SQLAlchemy()
+db = SQLAlchemy() # Garder l'initialisation de SQLAlchemy
 mail = Mail()
 login_manager = LoginManager()
 login_manager.login_view = 'main.login' # Nom de la vue de connexion, si l'utilisateur n'est pas authentifié
@@ -54,6 +59,7 @@ def create_app():
     db.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
+    Migrate(app, db) # Initialiser Flask-Migrate
     socketio.init_app(app)
 
     @app.before_request
@@ -72,9 +78,14 @@ def create_app():
 
     app.register_blueprint(main_bp)
 
-    # Crée les tables et remplit les données initiales
+    # La création des tables est maintenant gérée par Flask-Migrate.
+    # db.create_all() est conservé ici pour la première exécution, mais
+    # la bonne pratique est de le remplacer par les commandes de migration.
+    # Nous le laissons pour l'instant pour assurer la création initiale.
     with app.app_context():
-        db.create_all() # Crée toutes les tables définies dans models.py
-        seed_data(app) # Appelle la fonction pour remplir les données
+        # La création des tables et le remplissage des données sont maintenant gérés
+        # par les commandes `flask db upgrade`.
+        # seed_data(app) # Cet appel est maintenant géré par les migrations.
+        pass
 
     return app, socketio

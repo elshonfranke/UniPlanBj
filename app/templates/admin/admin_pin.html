@@ -1,14 +1,16 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vérification de Sécurité - UniPlanBJ</title>
+{% extends "base.html" %}
+
+{% block title %}Vérification de Sécurité - UniPlanBJ{% endblock %}
+
+{% block head_extra %}
     <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
     <!-- On réutilise le style de la page de connexion pour la cohérence -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
     <div class="container">
         <form method="POST" action="{{ url_for('main.admin_verify_pin') }}">
             <h1>Vérification de Sécurité</h1>
@@ -40,5 +42,4 @@
             </div>
         </form>
     </div>
-</body>
-</html>
+{% endblock %}

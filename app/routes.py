@@ -3,7 +3,7 @@ from flask_login import login_required, current_user, login_user, logout_user
 from app import db, mail, socketio
 from app import login_manager
 from flask_mail import Message
-from app.models import Utilisateur, Filiere, Niveau, Groupe, Cours, CoursAffectation, Notification, DisponibiliteEnseignant, Matiere, Salle, Conversation, Message, Enseigne
+from app.models import Utilisateur, Filiere, Niveau, Groupe, Cours, CoursAffectation, Notification, DisponibiliteEnseignant, Matiere, Salle, Conversation, Message, Enseigne, PushSubscription
 from datetime import datetime, timedelta
 from .decorators import role_required
 from sqlalchemy import or_, and_, func # Importation des fonctions pour les requêtes complexes
@@ -12,6 +12,8 @@ from flask_socketio import emit, join_room, leave_room
 import os
 import secrets
 from PIL import Image
+from pywebpush import webpush, WebPushException
+import json
 import uuid
 from werkzeug.utils import secure_filename
 
@@ -1487,3 +1489,64 @@ def logout():
     logout_user()
     session.pop('admin_pin_verified', None) # Efface la vérification du PIN à la déconnexion
     return redirect(url_for('main.home')) # Redirige vers la nouvelle page d'accueil
+
+# ===================================================================
+# ==                ROUTES POUR LES NOTIFICATIONS PUSH             ==
+# ===================================================================
+
+@main_bp.route('/api/vapid-public-key')
+@login_required
+def get_vapid_public_key():
+    """Fournit la clé publique VAPID au client."""
+    return current_app.config['VAPID_PUBLIC_KEY']
+
+@main_bp.route('/api/subscribe', methods=['POST'])
+@login_required
+def subscribe_push():
+    """Abonne un utilisateur aux notifications push."""
+    subscription_data = request.get_json()
+    if not subscription_data:
+        return jsonify({'error': 'Aucune donnée d\'abonnement fournie'}), 400
+
+    # Vérifier si l'abonnement existe déjà pour cet utilisateur
+    endpoint = subscription_data.get('endpoint')
+    existing_subscription = PushSubscription.query.filter_by(user_id=current_user.id).filter(PushSubscription.subscription_json.like(f'%"{endpoint}"%')).first()
+
+    if not existing_subscription:
+        new_subscription = PushSubscription(
+            user_id=current_user.id,
+            subscription_json=json.dumps(subscription_data)
+        )
+        db.session.add(new_subscription)
+        db.session.commit()
+        
+    return jsonify({'success': True}), 201
+
+def send_push_notification(user_id, title, body, url):
+    """
+    Fonction d'aide pour envoyer une notification push à un utilisateur spécifique.
+    """
+    subscriptions = PushSubscription.query.filter_by(user_id=user_id).all()
+    if not subscriptions:
+        return
+
+    payload = {
+        'title': title,
+        'body': body,
+        'url': url_for('main.dashboard', _external=True) # URL par défaut
+    }
+
+    for sub in subscriptions:
+        try:
+            webpush(
+                subscription_info=json.loads(sub.subscription_json),
+                data=json.dumps(payload),
+                vapid_private_key=current_app.config['VAPID_PRIVATE_KEY'],
+                vapid_claims=current_app.config['VAPID_CLAIMS']
+            )
+        except WebPushException as ex:
+            current_app.logger.error(f"Erreur d'envoi de notification push: {ex}")
+            # Si l'abonnement est expiré ou invalide (code 410), on le supprime
+            if ex.response and ex.response.status_code == 410:
+                db.session.delete(sub)
+                db.session.commit()

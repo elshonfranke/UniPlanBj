@@ -1,20 +1,43 @@
-/* --- Animations de l'arrière-plan --- */
-@keyframes image-slideshow {
-    /* NOTE: Il est fortement recommandé de télécharger ces images et de les servir localement. */
-    0%, 100% { background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop'); } /* Salle de conférence */
-    25%      { background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'); } /* Collaboration au bureau */
-    50%      { background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop'); } /* Étudiants sur un banc */
-    75%      { background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2153&auto=format&fit=crop'); } /* Bibliothèque */
-}
-
 @keyframes ken-burns {
     0%   { transform: scale(1.1); }
     100% { transform: scale(1.2); }
 }
 
+/* Palette du thème (alignée avec le logo): vert, jaune, rouge, noir/blanc */
+:root {
+    --brand-green: #0b6e3b;
+    --brand-green-dark: #084d2a;
+    --brand-yellow: #ffd400;
+    --brand-red: #e31e24;
+    --brand-black: #121212;
+    --brand-white: #ffffff;
+    --glass-border: rgba(255, 255, 255, 0.15);
+    --border-color: rgba(0, 0, 0, 0.08);
+    --text-muted: #5f6b7a;
+}
+/* --- Thème Sombre --- */
+[data-theme="dark"] {
+    --brand-black: #ffffff;
+    --brand-white: #121212;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --text-muted: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .header-custom {
+    background: #1a1a1a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .header-custom h1,
+[data-theme="dark"] .header-custom p {
+    color: #fff;
+    text-shadow: none;
+}
+
 body {
     font-family: 'Montserrat', Arial, sans-serif;
-    color: #fff; /* Texte par défaut en blanc pour un meilleur contraste */
+    color: var(--brand-black); /* Texte sombre pour fond clair */
+    background: var(--brand-white);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -24,15 +47,7 @@ body {
 
 /* Pseudo-élément pour gérer le diaporama en arrière-plan */
 body::before {
-  content: '';
-  position: fixed; /* Fixed pour qu'il reste en place au défilement */
-  top: 0; left: 0; right: 0; bottom: 0;
-  z-index: -1;
-  background-size: cover;
-  background-position: center;
-  animation: 
-    image-slideshow 30s linear infinite,
-    ken-burns 45s ease-in-out infinite alternate;
+  content: none; /* Désactive le diaporama en arrière-plan */
 }
 
 main {
@@ -41,66 +56,75 @@ main {
 
 /* Effet "Glassmorphism" pour le header */
 .header-custom {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px); /* Pour Safari */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none; /* Pour Safari */
+    border-bottom: 1px solid var(--border-color);
     padding: 2rem 0;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
 .header-custom h1 {
     font-size: 3rem;
-    color: #fff;
+    color: var(--brand-green-dark);
     letter-spacing: 2px;
     font-weight: 600;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: none;
 }
 
 .header-custom p {
     font-size: 1.2rem;
-    color: #f0f0f0;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: #555;
+    text-shadow: none;
 }
 
 /* Icônes pour les cartes */
 .feature-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: #fff;
-    text-shadow: 0 2px 8px rgba(131, 58, 180, 0.5);
+    color: var(--brand-green);
+    text-shadow: none;
 }
 
 /* Cartes avec effet "Glassmorphism" et lueur au survol */
 .feature-card {
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: #fff;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid var(--border-color);
     border-radius: 1rem;
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
-    color: #fff;
+    color: var(--brand-black);
+}
+
+[data-theme="dark"] .feature-card {
+    background: #1e1e1e;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .feature-card:hover {
     transform: translateY(-10px) scale(1.03);
-    box-shadow: 0 0 25px rgba(255, 255, 255, 0.3), 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
 .feature-card h3 {
-    color: #fff;
+    color: var(--brand-green-dark);
     font-weight: 600;
 }
 
+[data-theme="dark"] .feature-card h3 {
+    color: var(--brand-yellow);
+}
+
 .feature-card p {
-    color: #e0e0e0;
+    color: var(--text-muted);
 }
 
 /* Boutons personnalisés avec plus d'impact */
 .btn-primary-custom {
-    background: linear-gradient(90deg, #fd1d1d, #fcb045);
+    background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark));
     color: #fff;
     border: none;
     padding: 0.8rem 2rem;
@@ -114,30 +138,49 @@ main {
 
 .btn-primary-custom:hover {
     transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 25px rgba(252, 176, 69, 0.4);
+    box-shadow: 0 10px 24px rgba(11, 110, 59, 0.35);
 }
 
+/* Style du bouton secondaire (Créer un compte) */
 .btn-secondary-custom {
     background-color: transparent;
-    color: #fff;
-    border: 2px solid #fff;
+    color: var(--brand-green-dark); /* Texte vert foncé sur fond clair */
+    border: 2px solid var(--brand-green-dark); /* Bordure vert foncé */
     padding: 0.8rem 2rem;
     border-radius: 2rem;
     font-weight: bold;
     transition: all 0.3s ease;
 }
 
+/* Au survol, on inverse les couleurs */
 .btn-secondary-custom:hover {
-    background-color: #fff;
-    color: #833ab4; /* Violet principal de la nouvelle palette */
+    background-color: var(--brand-green-dark);
+    color: #fff; /* Texte blanc */
     transform: scale(1.05);
+}
+
+/* Adaptation pour le thème sombre */
+[data-theme="dark"] .btn-secondary-custom {
+    color: var(--brand-yellow); /* Texte jaune sur fond sombre */
+    border-color: var(--brand-yellow); /* Bordure jaune */
+}
+
+[data-theme="dark"] .btn-secondary-custom:hover {
+    background-color: var(--brand-yellow);
+    color: var(--brand-black); /* Texte noir */
 }
 
 /* Styles du footer */
 footer {
-    color: #fff;
+    color: var(--brand-black);
     background: transparent;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    margin-top: auto; /* Assure le footer en bas si contenu court */
+}
+[data-theme="dark"] footer {
+    color: rgba(255, 255, 255, 0.7);
+    background: #121212;
+    text-shadow: none;
 }
 
 /* Styles pour la section "À propos" */
@@ -160,14 +203,14 @@ footer {
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--glass-border);
     border-radius: 1rem;
     box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
     padding: 2rem;
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: 100%;
-    color: #fff;
+    color: var(--brand-white);
 }
 
 .creator-card:hover {
@@ -198,14 +241,14 @@ footer {
 }
 
 .social-links a {
-    color: #fff;
+    color: var(--brand-white);
     font-size: 1.5rem;
     margin: 0 0.5rem;
     transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .social-links a:hover {
-    color: #fd1d1d; /* Une des couleurs vives de la palette */
+    color: var(--brand-yellow);
     transform: scale(1.2);
 }
 
@@ -216,7 +259,7 @@ footer {
     left: 0;
     width: 100%;
     height: 100%;
-    background: #121212; /* Un fond sombre pour cacher le chargement */
+    background: var(--brand-black); /* Un fond sombre pour cacher le chargement */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -235,7 +278,7 @@ footer {
     width: 60px;
     height: 60px;
     border: 5px solid rgba(255, 255, 255, 0.2);
-    border-top-color: #fd1d1d; /* Couleur vive de la palette du site */
+    border-top-color: var(--brand-yellow); /* Couleur inspirée du ruban du logo */
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

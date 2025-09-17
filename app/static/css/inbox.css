@@ -1,14 +1,6 @@
 /* app/static/css/inbox.css */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
 
-/* --- Animations de l'arrière-plan (cohérence avec le reste du site) --- */
-@keyframes image-slideshow {
-    0%, 100% { background-image: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop'); }
-    25%      { background-image: url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop'); }
-    50%      { background-image: url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop'); }
-    75%      { background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=2153&auto=format&fit=crop'); }
-}
-
 @keyframes ken-burns {
     0%   { transform: scale(1.1); }
     100% { transform: scale(1.2); }
