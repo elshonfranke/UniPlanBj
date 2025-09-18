@@ -79,7 +79,17 @@ class Utilisateur(db.Model, UserMixin):
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     mot_de_passe_hash = db.Column(db.String(128), nullable=False)
     # Utilisation de SQLAlchemyEnum avec un Enum Python pour la compatibilité avec PostgreSQL
-    role = db.Column(SQLAlchemyEnum(RoleEnum, name="role_enum_type", native_enum=False), default=RoleEnum.ETUDIANT, nullable=False)
+    role = db.Column(
+        SQLAlchemyEnum(
+            RoleEnum,
+            name="role_enum_type",
+            native_enum=False,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            validate_strings=True,
+        ),
+        default=RoleEnum.ETUDIANT,
+        nullable=False,
+    )
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     picture = db.Column(db.String(20), nullable=False, default='default.jpg')
     
@@ -305,7 +315,16 @@ class Notification(db.Model):
     message = db.Column(db.Text, nullable=False)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     # Utilisation de SQLAlchemyEnum pour la compatibilité avec PostgreSQL
-    destinataire_role = db.Column(SQLAlchemyEnum(DestinataireRoleEnum, name="destinataire_role_enum_type", native_enum=False), nullable=False)
+    destinataire_role = db.Column(
+        SQLAlchemyEnum(
+            DestinataireRoleEnum,
+            name="destinataire_role_enum_type",
+            native_enum=False,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            validate_strings=True,
+        ),
+        nullable=False,
+    )
     destinataire_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True) # Nullable si 'all' ou un rôle générique
     est_lue = db.Column(db.Boolean, default=False)
 
@@ -339,7 +358,7 @@ class DisponibiliteEnseignant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     enseignant_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
     # Utilisation d'un Enum pour les jours de la semaine pour la robustesse
-    jour_semaine = db.Column(db.Enum('Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'), nullable=False)
+    jour_semaine = db.Column(db.Enum('Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', name='jour_semaine_enum', native_enum=False), nullable=False)
     heure_debut = db.Column(db.Time, nullable=False)
     heure_fin = db.Column(db.Time, nullable=False)
 
