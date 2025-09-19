@@ -1,17 +1,19 @@
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Connexion - UniPlanBJ</title>
+{% extends "base.html" %}
+
+{% block title %}Connexion - UniPlanBJ{% endblock %}
+
+{% block head_extra %}
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
       rel="stylesheet"
     />
     <!-- On lie le fichier CSS externe pour une meilleure organisation et performance -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
-  </head>
-  <body>
+{% endblock %}
+
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
     <div class="container">
       <!-- Le formulaire doit avoir une méthode (POST) et une action pour fonctionner -->
       <form method="POST" action="{{ url_for('main.login') }}">
@@ -54,7 +56,9 @@
         </div>
       </form>
     </div>
+{% endblock %}
 
+{% block scripts %}
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const passwordToggles = document.querySelectorAll('.password-toggle');
@@ -75,6 +79,4 @@
         });
       });
     </script>
-  </body>
-</html>
-            
+{% endblock %}

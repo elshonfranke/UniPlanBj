@@ -1,0 +1,42 @@
+/* app/static/css/theme-switcher.css */
+.theme-switcher {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050; /* Doit être au-dessus des autres éléments */
+}
+
+.theme-switcher button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Style par défaut (thème clair) */
+.theme-switcher button {
+    background-color: #343a40; /* Gris foncé */
+    color: #f8f9fa; /* Blanc cassé */
+}
+
+.theme-switcher button:hover {
+    background-color: #495057;
+    transform: scale(1.1);
+}
+
+/* Style pour le thème sombre */
+[data-theme="dark"] .theme-switcher button {
+    background-color: #ffd400; /* Jaune */
+    color: #121212; /* Noir */
+}
+
+[data-theme="dark"] .theme-switcher button:hover {
+    background-color: #ffca2b;
+}

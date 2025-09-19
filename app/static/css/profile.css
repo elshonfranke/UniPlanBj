@@ -20,10 +20,13 @@
 }
 
 :root {
-    /* --- Theme Variables --- */
+    /* --- Theme Variables (alignées avec le logo) --- */
     --avatar-size: 140px;
-    --brand-gradient: linear-gradient(90deg, #fd1d1d, #fcb045);
-    --brand-orange: #fcb045;
+    --brand-green: #0b6e3b;
+    --brand-green-dark: #084d2a;
+    --brand-yellow: #ffd400;
+    --brand-red: #e31e24;
+    --brand-gradient: linear-gradient(90deg, var(--brand-green), var(--brand-yellow));
     --glass-bg: rgba(255, 255, 255, 0.15);
     --glass-border: rgba(255, 255, 255, 0.2);
     --text-color: #fff;
@@ -36,9 +39,9 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 2rem 0;
-    background: linear-gradient(120deg, #833ab4, #fd1d1d, #fcb045);
-    background-size: 400% 400%;
-    animation: gradient-animation 18s ease infinite;
+    background: #ffffff;
+    background-size: auto;
+    animation: none;
     color: var(--text-color);
 }
 
@@ -46,14 +49,14 @@ body {
     width: 90%;
     max-width: 600px;
     /* --- Glassmorphism Effect --- */
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
     border-radius: 15px;
     padding: 2rem;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .profile-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
 }

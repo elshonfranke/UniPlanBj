@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tableau de bord – UniPlanBJ</title>
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord – UniPlanBJ{% endblock %}
+
+{% block head_extra %}
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;400&display=swap" rel="stylesheet">
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- CSS personnalisé pour le tableau de bord -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
     <style>
         /* Style pour les petits avatars dans l'en-tête (identique à celui de l'enseignant) */
         .profile-avatar-small {
@@ -33,8 +26,9 @@
             flex-shrink: 0; /* Empêche le rétrécissement dans un flex container */
         }
     </style>
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
     <header class="dashboard-header d-flex justify-content-between align-items-center">
         <h1>Tableau de Bord</h1>
         <div class="user-info d-flex align-items-center">
@@ -148,9 +142,6 @@
         </div>
     </main>
     <footer class="text-center">
-        &copy; 2025 UniplanBJ – Hackathon Universités Bénin. Tous droits réservés.
+        Copyright &copy; 2025 UniPlanBJ. Tous droits réservés.
     </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+{% endblock %}

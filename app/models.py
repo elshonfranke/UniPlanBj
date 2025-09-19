@@ -6,12 +6,18 @@ from flask_login import UserMixin # Pour faciliter l'intégration avec Flask-Log
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from flask import current_app
 from enum import Enum 
-from sqlalchemy import or_
+from sqlalchemy import or_, Enum as SQLAlchemyEnum
 # Modèle pour les Filières (ex: Informatique, Génie Civil, Droit)
 class RoleEnum(Enum):
     ETUDIANT = "etudiant"
     ENSEIGNANT = "enseignant"
     ADMINISTRATEUR = "administrateur"
+
+class DestinataireRoleEnum(Enum):
+    ETUDIANT = "etudiant"
+    ENSEIGNANT = "enseignant"
+    ADMINISTRATEUR = "administrateur"
+    ALL = "all"
 class Filiere(db.Model):
     __tablename__ = 'filieres' # Nom de la table dans la BDD, correspond au SQL
     id = db.Column(db.Integer, primary_key=True)
@@ -72,8 +78,18 @@ class Utilisateur(db.Model, UserMixin):
     prenom = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     mot_de_passe_hash = db.Column(db.String(128), nullable=False)
-    # Utilisation de db.Enum pour le type ENUM de MySQL
-    role = db.Column(db.Enum('etudiant', 'enseignant', 'administrateur'), default='etudiant', nullable=False)
+    # Utilisation de SQLAlchemyEnum avec un Enum Python pour la compatibilité avec PostgreSQL
+    role = db.Column(
+        SQLAlchemyEnum(
+            RoleEnum,
+            name="role_enum_type",
+            native_enum=False,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            validate_strings=True,
+        ),
+        default=RoleEnum.ETUDIANT,
+        nullable=False,
+    )
     last_seen = db.Column(db.DateTime, default=datetime.utcnow)
     picture = db.Column(db.String(20), nullable=False, default='default.jpg')
     
@@ -298,8 +314,17 @@ class Notification(db.Model):
     titre = db.Column(db.String(255), nullable=False)
     message = db.Column(db.Text, nullable=False)
     date_creation = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    # Utilisation de db.Enum pour le type ENUM de MySQL
-    destinataire_role = db.Column(db.Enum('etudiant', 'enseignant', 'administrateur', 'all'), nullable=False)
+    # Utilisation de SQLAlchemyEnum pour la compatibilité avec PostgreSQL
+    destinataire_role = db.Column(
+        SQLAlchemyEnum(
+            DestinataireRoleEnum,
+            name="destinataire_role_enum_type",
+            native_enum=False,
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+            validate_strings=True,
+        ),
+        nullable=False,
+    )
     destinataire_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True) # Nullable si 'all' ou un rôle générique
     est_lue = db.Column(db.Boolean, default=False)
 
@@ -333,7 +358,7 @@ class DisponibiliteEnseignant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     enseignant_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
     # Utilisation d'un Enum pour les jours de la semaine pour la robustesse
-    jour_semaine = db.Column(db.Enum('Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'), nullable=False)
+    jour_semaine = db.Column(db.Enum('Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', name='jour_semaine_enum', native_enum=False), nullable=False)
     heure_debut = db.Column(db.Time, nullable=False)
     heure_fin = db.Column(db.Time, nullable=False)
 
@@ -342,3 +367,13 @@ class DisponibiliteEnseignant(db.Model):
 
     def __repr__(self):
         return f'<Disponibilite {self.enseignant_obj.nom} - {self.jour_semaine} {self.heure_debut}>'
+
+# Modèle pour stocker les abonnements aux notifications Push
+class PushSubscription(db.Model):
+    __tablename__ = 'push_subscriptions'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
+    subscription_json = db.Column(db.Text, nullable=False)
+
+    # Relation inverse pour un accès facile depuis l'objet Utilisateur
+    user = db.relationship('Utilisateur', backref=db.backref('push_subscriptions', lazy='dynamic', cascade="all, delete-orphan"))

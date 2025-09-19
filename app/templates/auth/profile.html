@@ -131,7 +131,11 @@
                         <span>{{ current_user.initial }}</span>
                     </div>
                 {% else %}
-                    <img src="{{ url_for('static', filename='profile_pics/' + current_user.picture) }}" alt="Photo de profil">
+                    {% if current_user.picture.startswith('http') %}
+                        <img src="{{ current_user.picture }}" alt="Photo de profil">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='profile_pics/' + current_user.picture) }}" alt="Photo de profil">
+                    {% endif %}
                 {% endif %}
             </div>
             <h1 class="profile-name h3">{{ current_user.prenom }} {{ current_user.nom }}</h1>

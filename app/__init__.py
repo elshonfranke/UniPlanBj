@@ -2,58 +2,48 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate # Importer Flask-Migrate
 import os
+from dotenv import load_dotenv
 from flask_socketio import SocketIO
+from supabase import create_client, Client
+
 from app.config import Config # Importe votre classe de configuration
 
 # Initialisation des extensions
-db = SQLAlchemy()
+db = SQLAlchemy() # Garder l'initialisation de SQLAlchemy
 mail = Mail()
+supabase: Client = None # Instance du client Supabase, initialisée dans create_app
 login_manager = LoginManager()
 login_manager.login_view = 'main.login' # Nom de la vue de connexion, si l'utilisateur n'est pas authentifié
 socketio = SocketIO()
 
-def seed_data(app):
-    """Remplit la base de données avec les données initiales si nécessaire."""
-    with app.app_context():
-        from .models import Niveau, Filiere
-        # Vérifie si la table Niveau est vide
-        if Niveau.query.count() == 0:
-            print("Base de données 'Niveau' vide. Remplissage...")
-            niveaux_a_ajouter = [
-                Niveau(nom_niveau='Licence 1 (L1)'),
-                Niveau(nom_niveau='Licence 2 (L2)'),
-                Niveau(nom_niveau='Licence 3 (L3)'),
-                Niveau(nom_niveau='Master 1 (M1)'),
-                Niveau(nom_niveau='Master 2 (M2)')
-            ]
-            db.session.bulk_save_objects(niveaux_a_ajouter)
-            db.session.commit()
-            print("Niveaux d'étude ajoutés.")
-        
-        # Vérifie si la table Filiere est vide
-        if Filiere.query.count() == 0:
-            print("Base de données 'Filiere' vide. Remplissage...")
-            filieres_a_ajouter = [
-                Filiere(nom_filiere='Intelligence Artificielle (IA)'),
-                Filiere(nom_filiere='Système Embarqué et Internet des Objets (SEIOT)'),
-                Filiere(nom_filiere='Génie Logiciel (GL)'),
-                Filiere(nom_filiere='Sécurité en Informatique (SI)'),
-                Filiere(nom_filiere='Internet et Multimédia (IM)'),
-                Filiere(nom_filiere='SIRI')
-            ]
-            db.session.bulk_save_objects(filieres_a_ajouter)
-            db.session.commit()
-            print("Filières ajoutées.")
+def create_app(db_config=None):
+    # Charger les variables d'environnement depuis le fichier .env
+    # Ne pas forcer l'encodage ici pour éviter les erreurs si le fichier est en ANSI/Windows
+    load_dotenv()
 
-def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config) # Charge les configurations depuis config.py
+    # Charge la configuration depuis l'objet Config, qui gère déjà les variables d'environnement.
+    app.config.from_object(Config)
+
+    if db_config:
+        app.config.update(db_config)
+
+    # Appeler la méthode statique pour finaliser la configuration (ex: construire l'URI de la BDD)
+    # C'est ici que l'URI de la base de données sera réellement construite.
+    Config.init_app(app)
+
+    # Initialisation du client Supabase
+    # On utilise une variable globale pour la rendre accessible dans toute l'application.
+    global supabase
+    supabase = create_client(app.config["SUPABASE_URL"], app.config["SUPABASE_KEY"])
 
     # Initialise les extensions avec l'application Flask
     db.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
+    Migrate(app, db) # Initialiser Flask-Migrate
     socketio.init_app(app)
 
     @app.before_request
@@ -67,14 +57,11 @@ def create_app():
             current_user.last_seen = datetime.utcnow()
             db.session.commit()
 
-    # Importation et enregistrement des Blueprints (si vous en utilisez, sinon les routes directes)
+    # Importation et enregistrement des Blueprints et des commandes CLI
     from app.routes import main_bp
+    from app import commands
 
     app.register_blueprint(main_bp)
-
-    # Crée les tables et remplit les données initiales
-    with app.app_context():
-        db.create_all() # Crée toutes les tables définies dans models.py
-        seed_data(app) # Appelle la fonction pour remplir les données
+    commands.init_app(app)
 
     return app, socketio

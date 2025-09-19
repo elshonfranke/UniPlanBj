@@ -1,9 +1,9 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, session, current_app, jsonify
 from flask_login import login_required, current_user, login_user, logout_user
-from app import db, mail, socketio
+from app import db, mail, socketio, supabase
 from app import login_manager
 from flask_mail import Message
-from app.models import Utilisateur, Filiere, Niveau, Groupe, Cours, CoursAffectation, Notification, DisponibiliteEnseignant, Matiere, Salle, Conversation, Message, Enseigne
+from app.models import Utilisateur, Filiere, Niveau, Groupe, Cours, CoursAffectation, Notification, DisponibiliteEnseignant, Matiere, Salle, Conversation, Message, Enseigne, PushSubscription
 from datetime import datetime, timedelta
 from .decorators import role_required
 from sqlalchemy import or_, and_, func # Importation des fonctions pour les requêtes complexes
@@ -12,6 +12,8 @@ from flask_socketio import emit, join_room, leave_room
 import os
 import secrets
 from PIL import Image
+from pywebpush import webpush, WebPushException
+import json
 import uuid
 from werkzeug.utils import secure_filename
 
@@ -33,27 +35,33 @@ def inject_global_vars():
         return dict(unread_count=unread_notifications, unread_messages_count=unread_messages)
     return dict(unread_count=0, unread_messages_count=0)
 
-def save_profile_picture(form_picture):
+def save_profile_picture(form_picture, user_id):
     """
-    Sauvegarde et redimensionne la photo de profil de l'utilisateur.
-    Génère un nom de fichier aléatoire pour éviter les conflits.
+    Redimensionne et téléverse la photo de profil sur Supabase Storage.
+    Génère un nom de fichier unique basé sur l'ID de l'utilisateur et un token.
     """
     random_hex = secrets.token_hex(8)
-    # Garder l'extension du fichier original
     _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(current_app.root_path, 'static/profile_pics', picture_fn)
+    # Crée un chemin de fichier unique pour éviter les problèmes de cache
+    file_path_in_bucket = f"user_{user_id}/{random_hex}{f_ext}"
 
-    # S'assurer que le dossier de destination existe
-    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
-
-    # Redimensionner l'image pour économiser de l'espace et standardiser
+    # Redimensionner l'image
     output_size = (150, 150)
     i = Image.open(form_picture)
     i.thumbnail(output_size)
-    i.save(picture_path)
 
-    return picture_fn
+    # Sauvegarder l'image redimensionnée en mémoire
+    import io
+    image_io = io.BytesIO()
+    i.save(image_io, format=i.format or 'JPEG')
+    image_io.seek(0)
+
+    # Téléverser sur Supabase Storage
+    supabase.storage.from_("profile-pics").upload(file_path_in_bucket, image_io.read(), {
+        "content-type": f"image/{i.format.lower() if i.format else 'jpeg'}",
+        "x-upsert": "true" # Écrase le fichier s'il existe déjà au même chemin
+    })
+    return file_path_in_bucket
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -112,10 +120,12 @@ def dashboard():
             ).first()
 
     # Récupérer les notifications pertinentes pour l'utilisateur connecté
+    # S'assurer d'utiliser une chaîne pour le rôle courant (si Enum)
+    _current_role = current_user.role.value if hasattr(current_user.role, 'value') else current_user.role
     notifications = Notification.query.filter(
         or_(
             Notification.destinataire_role == 'all', # Notifications pour tout le monde
-            Notification.destinataire_role == current_user.role, # Notifications pour son rôle
+            Notification.destinataire_role == _current_role, # Notifications pour son rôle
             Notification.destinataire_id == current_user.id # Notifications personnelles
         )
     ).order_by(Notification.date_creation.desc()).limit(5).all()
@@ -307,13 +317,19 @@ def profile():
             
             if file and allowed_file(file.filename):
                 # Supprimer l'ancienne photo si ce n'est pas la photo par défaut
-                if current_user.picture != 'default.jpg':
-                    old_picture_path = os.path.join(current_app.root_path, 'static/profile_pics', current_user.picture)
-                    if os.path.exists(old_picture_path):
-                        os.remove(old_picture_path)
+                if current_user.picture != 'default.jpg' and not current_user.picture.startswith('http'):
+                    # Logique pour les anciennes images locales
+                    old_local_path = os.path.join(current_app.root_path, 'static/profile_pics', current_user.picture)
+                    if os.path.exists(old_local_path):
+                        os.remove(old_local_path)
+                elif current_user.picture.startswith('http'):
+                    # Logique pour les images sur Supabase (la suppression est gérée dans delete_profile_picture)
+                    # L'upload avec le même nom de base mais un nouveau token va simplement mettre à jour le fichier.
+                    pass
                 
-                picture_file = save_profile_picture(file)
-                current_user.picture = picture_file
+                picture_path_in_bucket = save_profile_picture(file, current_user.id)
+                public_url = supabase.storage.from_("profile-pics").get_public_url(picture_path_in_bucket)
+                current_user.picture = public_url
                 db.session.commit()
                 flash('Votre photo de profil a été mise à jour !', 'success')
                 return redirect(url_for('main.profile'))
@@ -326,17 +342,19 @@ def profile():
 @login_required
 def delete_profile_picture():
     """Supprime la photo de profil de l'utilisateur et la remplace par celle par défaut."""
-    if current_user.picture != 'default.jpg':
-        # Construire le chemin vers l'ancienne photo
-        picture_path = os.path.join(current_app.root_path, 'static/profile_pics', current_user.picture)
-        
-        # Essayer de supprimer le fichier physique
-        try:
-            if os.path.exists(picture_path):
-                os.remove(picture_path)
-        except OSError as e:
-            # Log l'erreur si la suppression échoue, mais continuer
-            current_app.logger.error(f"Erreur lors de la suppression du fichier image {picture_path}: {e}")
+    picture_url = current_user.picture
+    if picture_url != 'default.jpg':
+        if picture_url.startswith('http'):
+            # C'est une URL Supabase, on extrait le chemin du fichier
+            bucket_name = "profile-pics"
+            base_storage_url = f"{current_app.config['SUPABASE_URL']}/storage/v1/object/public/{bucket_name}/"
+            file_path = picture_url.replace(base_storage_url, '')
+            supabase.storage.from_(bucket_name).remove([file_path])
+        else:
+            # C'est une ancienne image locale
+            local_path = os.path.join(current_app.root_path, 'static/profile_pics', picture_url)
+            if os.path.exists(local_path):
+                os.remove(local_path)
 
         # Mettre à jour la base de données
         current_user.picture = 'default.jpg'
@@ -412,10 +430,11 @@ def admin_dashboard():
     online_users = Utilisateur.query.filter(Utilisateur.last_seen > five_minutes_ago).order_by(Utilisateur.last_seen.desc()).all()
 
     # Récupérer les notifications pour l'admin
+    _current_role = current_user.role.value if hasattr(current_user.role, 'value') else current_user.role
     admin_notifications = Notification.query.filter(
         or_(
             Notification.destinataire_role == 'all',
-            Notification.destinataire_role == 'administrateur',
+            Notification.destinataire_role == _current_role,
             Notification.destinataire_id == current_user.id
         )
     ).order_by(Notification.date_creation.desc()).limit(5).all()
@@ -832,7 +851,8 @@ def enseignant_dashboard():
     emploi_du_temps = Cours.query.filter_by(enseignant_id=current_user.id).order_by(Cours.date_cours, Cours.heure_debut).all()
     
     # CORRECTION : Ajout de la logique de notification pour les enseignants
-    notifications = Notification.query.filter(or_(Notification.destinataire_role == 'all', Notification.destinataire_role == 'enseignant', Notification.destinataire_id == current_user.id)).order_by(Notification.date_creation.desc()).limit(5).all()
+    _current_role = current_user.role.value if hasattr(current_user.role, 'value') else current_user.role
+    notifications = Notification.query.filter(or_(Notification.destinataire_role == 'all', Notification.destinataire_role == _current_role, Notification.destinataire_id == current_user.id)).order_by(Notification.date_creation.desc()).limit(5).all()
 
     return render_template('enseignant/dashboard.html', disponibilites=disponibilites, emploi_du_temps=emploi_du_temps, notifications=notifications)
 
@@ -1487,3 +1507,64 @@ def logout():
     logout_user()
     session.pop('admin_pin_verified', None) # Efface la vérification du PIN à la déconnexion
     return redirect(url_for('main.home')) # Redirige vers la nouvelle page d'accueil
+
+# ===================================================================
+# ==                ROUTES POUR LES NOTIFICATIONS PUSH             ==
+# ===================================================================
+
+@main_bp.route('/api/vapid-public-key')
+@login_required
+def get_vapid_public_key():
+    """Fournit la clé publique VAPID au client."""
+    return current_app.config['VAPID_PUBLIC_KEY']
+
+@main_bp.route('/api/subscribe', methods=['POST'])
+@login_required
+def subscribe_push():
+    """Abonne un utilisateur aux notifications push."""
+    subscription_data = request.get_json()
+    if not subscription_data:
+        return jsonify({'error': 'Aucune donnée d\'abonnement fournie'}), 400
+
+    # Vérifier si l'abonnement existe déjà pour cet utilisateur
+    endpoint = subscription_data.get('endpoint')
+    existing_subscription = PushSubscription.query.filter_by(user_id=current_user.id).filter(PushSubscription.subscription_json.like(f'%"{endpoint}"%')).first()
+
+    if not existing_subscription:
+        new_subscription = PushSubscription(
+            user_id=current_user.id,
+            subscription_json=json.dumps(subscription_data)
+        )
+        db.session.add(new_subscription)
+        db.session.commit()
+        
+    return jsonify({'success': True}), 201
+
+def send_push_notification(user_id, title, body, url):
+    """
+    Fonction d'aide pour envoyer une notification push à un utilisateur spécifique.
+    """
+    subscriptions = PushSubscription.query.filter_by(user_id=user_id).all()
+    if not subscriptions:
+        return
+
+    payload = {
+        'title': title,
+        'body': body,
+        'url': url_for('main.dashboard', _external=True) # URL par défaut
+    }
+
+    for sub in subscriptions:
+        try:
+            webpush(
+                subscription_info=json.loads(sub.subscription_json),
+                data=json.dumps(payload),
+                vapid_private_key=current_app.config['VAPID_PRIVATE_KEY'],
+                vapid_claims=current_app.config['VAPID_CLAIMS']
+            )
+        except WebPushException as ex:
+            current_app.logger.error(f"Erreur d'envoi de notification push: {ex}")
+            # Si l'abonnement est expiré ou invalide (code 410), on le supprime
+            if ex.response and ex.response.status_code == 410:
+                db.session.delete(sub)
+                db.session.commit()
